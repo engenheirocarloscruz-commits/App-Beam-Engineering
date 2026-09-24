@@ -1,0 +1,64 @@
+import React from 'react';
+
+export type TabKey = 'projetos' | 'carregamento' | 'perfis' | 'resultados';
+
+interface BottomNavBarProps {
+  activeTab: TabKey;
+  onTabChange: (tab: TabKey) => void;
+}
+
+export const BottomNavBar: React.FC<BottomNavBarProps> = ({ activeTab, onTabChange }) => {
+  const tabs = [
+    {
+      key: 'projetos' as TabKey,
+      label: 'Projetos',
+      icon: 'folder_open',
+    },
+    {
+      key: 'carregamento' as TabKey,
+      label: 'Carregamento',
+      icon: 'tune',
+    },
+    {
+      key: 'perfis' as TabKey,
+      label: 'Perfis',
+      icon: 'view_column',
+    },
+    {
+      key: 'resultados' as TabKey,
+      label: 'Resultados',
+      icon: 'analytics',
+    },
+  ];
+
+  return (
+    <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-2 bg-[#0a0e16] border-t border-[#3e4850] shadow-2xl">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.key;
+        return (
+          <button
+            key={tab.key}
+            onClick={() => onTabChange(tab.key)}
+            className={`flex flex-col items-center justify-center flex-1 h-full py-1 transition-all active:scale-95 ${
+              isActive
+                ? 'text-[#89ceff] font-bold'
+                : 'text-[#bec8d2] hover:text-[#dfe2ee]'
+            }`}
+          >
+            <span
+              className={`material-symbols-outlined text-[22px] mb-0.5 ${
+                isActive ? 'fill-1' : ''
+              }`}
+            >
+              {tab.icon}
+            </span>
+            <span className="font-mono text-[11px] leading-tight">{tab.label}</span>
+            {isActive && (
+              <span className="w-1.5 h-1 bg-[#89ceff] rounded-full mt-0.5"></span>
+            )}
+          </button>
+        );
+      })}
+    </nav>
+  );
+};

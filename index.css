@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@theme {
+  --color-surface: #0f131c;
+  --color-surface-dim: #0f131c;
+  --color-surface-bright: #353942;
+  --color-surface-container-lowest: #0a0e16;
+  --color-surface-container-low: #181c24;
+  --color-surface-container: #1c2028;
+  --color-surface-container-high: #262a33;
+  --color-surface-container-highest: #31353e;
+  --color-surface-variant: #31353e;
+  --color-on-surface: #dfe2ee;
+  --color-on-surface-variant: #bec8d2;
+  --color-background: #0f131c;
+  --color-on-background: #dfe2ee;
+  --color-outline: #88929b;
+  --color-outline-variant: #3e4850;
+
+  --color-primary: #89ceff;
+  --color-primary-container: #0ea5e9;
+  --color-primary-fixed: #c9e6ff;
+  --color-primary-fixed-dim: #89ceff;
+  --color-on-primary: #00344d;
+  --color-on-primary-container: #003751;
+  --color-on-primary-fixed: #001e2f;
+
+  --color-secondary: #ffb95f;
+  --color-secondary-container: #ee9800;
+  --color-secondary-fixed: #ffddb8;
+  --color-secondary-fixed-dim: #ffb95f;
+  --color-on-secondary: #472a00;
+  --color-on-secondary-container: #5b3800;
+
+  --color-tertiary: #4edea3;
+  --color-tertiary-container: #00b17b;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-on-tertiary: #003824;
+  --color-on-tertiary-container: #003b26;
+
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+
+  --font-headline: "Space Grotesk", sans-serif;
+  --font-body: "Geist", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-code-display: "JetBrains Mono", monospace;
+}
+
+/* Material Symbols configuration */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
+}
+
+.material-symbols-outlined.fill-1 {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Technical Blueprint Grids */
+.cad-grid-pattern {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(62, 72, 80, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(62, 72, 80, 0.25) 1px, transparent 1px);
+}
+
+.blueprint-grid {
+  background-size: 16px 16px;
+  background-image: 
+    linear-gradient(to right, rgba(62, 72, 80, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(62, 72, 80, 0.22) 1px, transparent 1px);
+}
+
+.datum-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(62, 72, 80, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(62, 72, 80, 0.15) 1px, transparent 1px);
+}
+
+/* Custom Scrollbars for Engineering Panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0e16;
+}
+::-webkit-scrollbar-thumb {
+  background: #262a33;
+  border-radius: 3px;
+  border: 1px solid #3e4850;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3e4850;
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .printable-sheet {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    background: white !important;
+    color: black !important;
+  }
+}

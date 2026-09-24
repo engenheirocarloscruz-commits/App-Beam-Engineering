@@ -1,0 +1,7 @@
+{
+  "name": "BeamSolid Pro - Dimensionamento Estrutural",
+  "description": "Software de dimensionamento estático, análise de vigas metálicas e memorial de cálculo estrutural conforme NBR 8800:2008 e AISC 360-16.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
