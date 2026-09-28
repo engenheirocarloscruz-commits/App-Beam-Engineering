@@ -76,10 +76,20 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
               {title}
             </span>
           </div>
+          {subtitle && (
+            <p className="font-mono text-[11px] text-[#bec8d2] tracking-wider leading-none">
+              {subtitle}
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center space-x-1 sm:space-x-2" />
+      <div className="flex items-center space-x-1 sm:space-x-2">
+        <div className="flex items-center px-2.5 py-1 rounded bg-[#262a33] border border-[#3e4850] font-mono text-[10px] text-[#4edea3]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#4edea3] mr-1.5 animate-pulse"></span>
+          CORE SOLVER v3.4.1
+        </div>
+      </div>
     </header>
   );
 };

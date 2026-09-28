@@ -246,6 +246,7 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                   <span className="w-2.5 h-2.5 rounded-full bg-[#89ceff] inline-block shadow-sm"></span>
                   Apoio A (Esquerdo)
                 </span>
+                <span className="font-mono text-[10px] text-[#88929b]">RA = {calcResults.reactionA.toFixed(1)} kN</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <label className="font-mono text-[11px] text-[#bec8d2]">x_A =</label>
@@ -259,7 +260,41 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                   className="w-24 bg-[#0a0e16] border border-[#3e4850] rounded px-2.5 py-1 font-mono text-xs text-[#89ceff] font-bold focus:border-[#89ceff] focus:outline-none"
                 />
                 <span className="font-mono text-xs text-[#88929b]">m</span>
+                {hasLeftCantilever ? (
+                  <span className="font-mono text-[10px] text-[#ffb95f] ml-auto">
+                    ↳ Balanço: {posA.toFixed(2)}m
+                  </span>
+                ) : (
+                  <span className="font-mono text-[10px] text-[#88929b] ml-auto">
+                    Extremidade (0m)
+                  </span>
+                )}
               </div>
+            </div>
+            <div className="flex gap-1 pt-1 font-mono text-[10px]">
+              <button
+                type="button"
+                onClick={() => updatePosA(0)}
+                className={`px-2 py-0.5 rounded border transition-colors ${
+                  posA === 0 ? 'bg-[#89ceff]/20 border-[#89ceff] text-[#89ceff] font-bold' : 'bg-[#0a0e16] border-[#3e4850] text-[#88929b] hover:text-[#dfe2ee]'
+                }`}
+              >
+                Extremidade (0m)
+              </button>
+              <button
+                type="button"
+                onClick={() => updatePosA(0.5)}
+                className="px-2 py-0.5 rounded bg-[#0a0e16] border border-[#3e4850] text-[#88929b] hover:text-[#dfe2ee]"
+              >
+                +0.50m
+              </button>
+              <button
+                type="button"
+                onClick={() => updatePosA(1.0)}
+                className="px-2 py-0.5 rounded bg-[#0a0e16] border border-[#3e4850] text-[#88929b] hover:text-[#dfe2ee]"
+              >
+                +1.00m
+              </button>
             </div>
           </div>
 
@@ -271,6 +306,7 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                   <span className="w-2.5 h-2.5 rounded-full bg-[#89ceff] inline-block shadow-sm"></span>
                   Apoio B (Direito)
                 </span>
+                <span className="font-mono text-[10px] text-[#88929b]">RB = {calcResults.reactionB.toFixed(1)} kN</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
                 <label className="font-mono text-[11px] text-[#bec8d2]">x_B =</label>
@@ -284,7 +320,41 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                   className="w-24 bg-[#0a0e16] border border-[#3e4850] rounded px-2.5 py-1 font-mono text-xs text-[#89ceff] font-bold focus:border-[#89ceff] focus:outline-none"
                 />
                 <span className="font-mono text-xs text-[#88929b]">m</span>
+                {hasRightCantilever ? (
+                  <span className="font-mono text-[10px] text-[#ffb95f] ml-auto">
+                    ↳ Balanço: {(spanLength - posB).toFixed(2)}m
+                  </span>
+                ) : (
+                  <span className="font-mono text-[10px] text-[#88929b] ml-auto">
+                    Extremidade (L)
+                  </span>
+                )}
               </div>
+            </div>
+            <div className="flex gap-1 pt-1 font-mono text-[10px]">
+              <button
+                type="button"
+                onClick={() => updatePosB(spanLength)}
+                className={`px-2 py-0.5 rounded border transition-colors ${
+                  posB === spanLength ? 'bg-[#89ceff]/20 border-[#89ceff] text-[#89ceff] font-bold' : 'bg-[#0a0e16] border-[#3e4850] text-[#88929b] hover:text-[#dfe2ee]'
+                }`}
+              >
+                Extremidade (L)
+              </button>
+              <button
+                type="button"
+                onClick={() => updatePosB(spanLength - 0.5)}
+                className="px-2 py-0.5 rounded bg-[#0a0e16] border border-[#3e4850] text-[#88929b] hover:text-[#dfe2ee]"
+              >
+                -0.50m
+              </button>
+              <button
+                type="button"
+                onClick={() => updatePosB(spanLength - 1.0)}
+                className="px-2 py-0.5 rounded bg-[#0a0e16] border border-[#3e4850] text-[#88929b] hover:text-[#dfe2ee]"
+              >
+                -1.00m
+              </button>
             </div>
           </div>
 
@@ -295,6 +365,9 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                 <span className="font-mono text-xs font-bold text-[#4edea3] flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[15px]">straighten</span>
                   VÃO TOTAL DA VIGA (L)
+                </span>
+                <span className="font-mono text-[10px] text-[#88929b]">
+                  ({(spanLength * 100).toFixed(0)} cm)
                 </span>
               </div>
               <div className="flex items-center space-x-1.5 mt-2">
@@ -317,6 +390,9 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                     className="w-16 bg-transparent border-0 p-0 font-mono text-xs font-bold text-[#89ceff] focus:outline-none"
                   />
                   <span className="font-mono text-xs text-[#88929b] ml-1">m</span>
+                  <span className="font-mono text-[10px] text-[#4edea3] ml-auto font-medium">
+                    L_AB: {(posB - posA).toFixed(2)}m
+                  </span>
                 </div>
                 <button
                   type="button"
@@ -327,6 +403,21 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                   +
                 </button>
               </div>
+            </div>
+            <div className="pt-1.5 border-t border-[#3e4850]/40 flex items-center justify-between font-mono text-[10px]">
+              <button
+                type="button"
+                onClick={() => {
+                  updatePosA(0);
+                  updatePosB(spanLength);
+                }}
+                className="text-[#89ceff] hover:underline"
+              >
+                Resetar apoios nos extremos (0 - L)
+              </button>
+              <span className="text-[#88929b]">
+                {posA === 0 && posB === spanLength ? 'Apoios nos extremos' : `${(((posB - posA) / spanLength) * 100).toFixed(0)}% vão livre`}
+              </span>
             </div>
           </div>
         </div>
@@ -382,29 +473,11 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
             <div className="w-full flex-1 flex items-center justify-center p-2 sm:p-4 mt-6 mb-2">
               <svg className="w-full max-w-3xl h-auto select-none overflow-visible" viewBox="0 0 720 230">
                 <defs>
-                  <marker
-                    id="arrow-dist"
-                    markerWidth="8"
-                    markerHeight="8"
-                    refX="7"
-                    refY="3.5"
-                    orient="auto"
-                    markerUnits="userSpaceOnUse"
-                    viewBox="0 0 8 7"
-                  >
-                    <path d="M 0 0.5 L 7 3.5 L 0 6.5 Z" fill="#0ea5e9" />
+                  <marker id="arrow-dist" markerHeight="6" markerWidth="6" orient="auto" refX="3" refY="5">
+                    <path d="M0,0 L3,5 L6,0 Z" fill="#0ea5e9" />
                   </marker>
-                  <marker
-                    id="arrow-point"
-                    markerWidth="14"
-                    markerHeight="14"
-                    refX="9"
-                    refY="5"
-                    orient="auto"
-                    markerUnits="userSpaceOnUse"
-                    viewBox="0 0 10 10"
-                  >
-                    <path d="M 0 1.5 L 9 5 L 0 8.5 Z" fill="#ffb95f" />
+                  <marker id="arrow-point" markerHeight="8" markerWidth="8" orient="auto" refX="4" refY="7">
+                    <path d="M0,0 L4,7 L8,0 Z" fill="#ffb95f" />
                   </marker>
                   <linearGradient id="distLoadGrad" x1="0%" x2="0%" y1="0%" y2="100%">
                     <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.28" />
@@ -470,25 +543,15 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
                       className="cursor-pointer hover:opacity-90"
                       onClick={() => handleOpenEditModal(p)}
                     >
-                      {/* Linha guia superior */}
-                      <line x1={px} x2={px} y1={2} y2={14} stroke="#ffb95f" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
-                      {/* Seta vertical apontada para a viga */}
-                      <line
-                        x1={px}
-                        x2={px}
-                        y1={20}
-                        y2={105}
-                        stroke="#ffb95f"
-                        strokeWidth="3.5"
-                        strokeLinecap="round"
-                        markerEnd="url(#arrow-point)"
-                      />
+                      <line x1={px} x2={px} y1={12} y2={110} stroke="#ffb95f" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
+                      <line x1={px} x2={px} y1={18} y2={106} stroke="#ffb95f" strokeWidth="2.75" markerEnd="url(#arrow-point)" />
                       <g transform={`translate(${px}, 10)`}>
                         <rect x={-46} y={-14} width={92} height={20} rx={3} fill="#1e293b" stroke="#ffb95f" strokeWidth="1.2" />
                         <text x={0} y={0} fill="#ffb95f" fontFamily="JetBrains Mono" fontSize="11" fontWeight="700" textAnchor="middle">
                           P = {p.value.toFixed(1)} kN
                         </text>
                       </g>
+                      <circle cx={px} cy={110} r={3.5} fill="#ffb95f" />
                     </g>
                   );
                 })}
@@ -836,10 +899,9 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
 
           {/* CTA Avançar */}
           <button
-            id="btn-avancar-perfis"
             type="button"
             onClick={onAdvanceToProfiles}
-            className="w-full py-3 px-4 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] rounded font-headline font-bold flex items-center justify-center space-x-2 shadow-lg transition-all active:scale-[0.99] group text-base cursor-pointer"
+            className="w-full py-3 px-4 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] rounded font-headline font-bold flex items-center justify-center space-x-2 shadow-lg transition-all active:scale-[0.99] group text-base"
           >
             <span>Avançar para Seleção de Perfis</span>
             <span className="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">
