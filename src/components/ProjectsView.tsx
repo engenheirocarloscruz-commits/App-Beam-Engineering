@@ -415,11 +415,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
 
           {/* Primary Execution Button */}
           <button
+            id="btn-iniciar-dimensionamento"
             type="button"
             onClick={onStartCalculation}
-            className="flex items-center justify-center gap-2 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] active:opacity-90 px-6 py-3 rounded-lg font-headline text-sm font-bold transition-all shadow-md"
+            className="flex items-center justify-center gap-2 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] active:opacity-90 px-6 py-3 rounded-lg font-headline text-sm font-bold transition-all shadow-md group cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">play_arrow</span>
+            <span className="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">play_arrow</span>
             <span>Iniciar Dimensionamento</span>
           </button>
         </div>

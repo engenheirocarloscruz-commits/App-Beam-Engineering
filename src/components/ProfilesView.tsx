@@ -966,9 +966,10 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({
       {/* 6. Bottom Action Trigger */}
       <div className="pt-2">
         <button
+          id="btn-confirmar-calcular"
           type="button"
           onClick={onConfirmCalculate}
-          className="w-full h-12 bg-[#89ceff] text-[#00344d] font-headline font-bold text-sm rounded flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-[0.99] transition-all duration-150"
+          className="w-full h-12 bg-[#89ceff] text-[#00344d] font-headline font-bold text-sm rounded flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-[0.99] transition-all duration-150 cursor-pointer"
         >
           <span className="material-symbols-outlined text-xl">calculate</span>
           <span>Confirmar e Calcular Diagramas com este Perfil</span>

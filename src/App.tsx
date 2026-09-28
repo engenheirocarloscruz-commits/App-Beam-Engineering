@@ -14,6 +14,7 @@ export function App() {
   // Navigation & View state
   const [activeTab, setActiveTab] = useState<TabKey>('projetos');
   const [showReportView, setShowReportView] = useState<boolean>(false);
+  const [resultsReady, setResultsReady] = useState<boolean>(false);
 
   // Structural parameters
   const [spanLength, setSpanLength] = useState<number>(6.0);
@@ -180,7 +181,10 @@ export function App() {
                 selectedSteelGrade={selectedSteelGrade}
                 onSelectProfile={(p) => setSelectedProfile(p)}
                 onSelectSteelGrade={(g) => setSelectedSteelGrade(g)}
-                onConfirmCalculate={() => setActiveTab('resultados')}
+                onConfirmCalculate={() => {
+                  setResultsReady(true);
+                  setActiveTab('resultados');
+                }}
               />
             )}
 
@@ -204,8 +208,20 @@ export function App() {
 
           <BottomNavBar
             activeTab={activeTab}
+            resultsReady={resultsReady || activeTab === 'resultados'}
             onTabChange={(tab) => {
-              setActiveTab(tab);
+              // Após o cálculo finalizado, permitir a navegação e o retorno às outras abas sem qualquer bloqueio!
+              if (resultsReady || activeTab === 'resultados') {
+                setActiveTab(tab);
+                return;
+              }
+
+              // Antes do cálculo finalizado, a navegação direta por abas permanece bloqueada (avanço apenas via botões)
+              const tabOrder: TabKey[] = ['projetos', 'carregamento', 'perfis', 'resultados'];
+              const currentIdx = tabOrder.indexOf(activeTab);
+              const targetIdx = tabOrder.indexOf(tab);
+
+              if (targetIdx === currentIdx) return;
             }}
           />
         </>

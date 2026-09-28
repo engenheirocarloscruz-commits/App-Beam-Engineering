@@ -836,9 +836,10 @@ export const LoadingView: React.FC<LoadingViewProps> = ({
 
           {/* CTA Avançar */}
           <button
+            id="btn-avancar-perfis"
             type="button"
             onClick={onAdvanceToProfiles}
-            className="w-full py-3 px-4 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] rounded font-headline font-bold flex items-center justify-center space-x-2 shadow-lg transition-all active:scale-[0.99] group text-base"
+            className="w-full py-3 px-4 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] rounded font-headline font-bold flex items-center justify-center space-x-2 shadow-lg transition-all active:scale-[0.99] group text-base cursor-pointer"
           >
             <span>Avançar para Seleção de Perfis</span>
             <span className="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">
