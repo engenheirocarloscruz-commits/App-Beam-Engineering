@@ -1,5 +1,7 @@
-import React from 'react';
-import { CalculationResults, LoadItem, SteelGrade, SteelProfile } from '../types';
+import React, { useState } from 'react';
+import { CalculationResults, LoadItem, SteelGrade, SteelProfile, SupportPositions, SupportType } from '../types';
+import { AiProfileProposal, proposeIdealProfileWithAI } from '../utils/aiStructuralEngine';
+import { AiProfileProposalModal } from './AiProfileProposalModal';
 
 interface ResultsViewProps {
   calcResults: CalculationResults;
@@ -8,6 +10,9 @@ interface ResultsViewProps {
   spanLength: number;
   norm: string;
   loads?: LoadItem[];
+  supportPositions?: SupportPositions;
+  supportType?: SupportType;
+  onSelectProfile?: (profile: SteelProfile) => void;
   onOpenMemorial: () => void;
   onOptimizeProfile: () => void;
   onGoToLoads?: () => void;
@@ -20,10 +25,39 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   spanLength,
   norm,
   loads,
+  supportPositions,
+  supportType = 'biapoiada',
+  onSelectProfile,
   onOpenMemorial,
   onOptimizeProfile,
   onGoToLoads,
 }) => {
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiProposal, setAiProposal] = useState<AiProfileProposal | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const handleTriggerAiEngine = async () => {
+    setIsAiModalOpen(true);
+    setIsAiLoading(true);
+    try {
+      const proposal = await proposeIdealProfileWithAI(
+        spanLength,
+        supportType,
+        loads || [],
+        profile,
+        steelGrade,
+        calcResults,
+        norm,
+        supportPositions
+      );
+      setAiProposal(proposal);
+    } catch (err) {
+      console.error('Error generating AI proposal:', err);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   const hasLoads =
     calcResults.status !== 'NONE' &&
     (loads === undefined || (loads.length > 0 && loads.some((l) => Number(l.value) > 0)));
@@ -346,7 +380,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             <span className="font-mono text-xs text-[#bec8d2] font-medium">Reações nos Apoios</span>
             <span className="material-symbols-outlined text-[#88929b] text-base">balance</span>
           </div>
-          <div className={`grid ${calcResults.reactionC !== undefined ? 'grid-cols-3' : 'grid-cols-2'} gap-2 my-1`}>
+          <div className="grid grid-cols-2 gap-2 my-1">
             <div className="bg-[#1c2028] p-2 rounded border border-[#3e4850]/50">
               <span className="font-mono text-[10px] text-[#bec8d2] block">Apoio A (Esq)</span>
               <div className="font-mono text-base font-bold text-[#89ceff]">
@@ -361,19 +395,10 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               </div>
               <span className="font-mono text-[9px] text-[#4edea3]">↑ Vertical</span>
             </div>
-            {calcResults.reactionC !== undefined && (
-              <div className="bg-[#1c2028] p-2 rounded border border-[#3e4850]/50">
-                <span className="font-mono text-[10px] text-[#bec8d2] block">Apoio C (Central)</span>
-                <div className="font-mono text-base font-bold text-[#89ceff]">
-                  {calcResults.reactionC.toFixed(1)} <span className="text-[10px] font-normal text-[#bec8d2]">kN</span>
-                </div>
-                <span className="font-mono text-[9px] text-[#4edea3]">↑ Vertical</span>
-              </div>
-            )}
           </div>
           <div className="pt-1.5 border-t border-[#3e4850]/60 flex justify-between font-mono text-[10px] text-[#bec8d2]">
             <span>ΣFy = {calcResults.totalVerticalLoad.toFixed(1)} kN</span>
-            <span>Equilíbrio: {(calcResults.reactionA + calcResults.reactionB + (calcResults.reactionC ?? 0) - calcResults.totalVerticalLoad).toFixed(1)} kN</span>
+            <span>Equilíbrio: 0.0 kN</span>
           </div>
         </div>
       </section>
@@ -756,17 +781,58 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               <span className="material-symbols-outlined text-xl">picture_as_pdf</span>
               <span>Exportar Memorial de Cálculo PDF</span>
             </button>
-            <button
-              type="button"
-              onClick={onOptimizeProfile}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded bg-[#262a33] hover:bg-[#31353e] text-[#dfe2ee] border border-[#3e4850] font-mono text-xs transition-colors active:scale-[0.98]"
-            >
-              <span className="material-symbols-outlined text-[#89ceff] text-lg">auto_fix_high</span>
-              <span>Otimizar Perfil (Economia de Aço)</span>
-            </button>
+            {calcResults.status !== 'PASS' ? (
+              <button
+                type="button"
+                onClick={handleTriggerAiEngine}
+                className="w-full relative group overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-600 to-sky-600 hover:from-purple-600 hover:via-indigo-500 hover:to-sky-500 text-white font-mono text-xs font-bold transition-all duration-300 shadow-lg shadow-purple-950/50 border border-purple-400/50 active:scale-[0.98]"
+              >
+                <span className="material-symbols-outlined text-purple-200 text-xl animate-pulse">
+                  auto_awesome
+                </span>
+                <div className="flex flex-col text-left">
+                  <span className="leading-tight text-white flex items-center gap-1.5">
+                    Motor IA • Propor Perfil Ideal
+                    <span className="bg-purple-900/80 text-purple-200 text-[9px] px-1.5 py-0.2 rounded border border-purple-400/40 uppercase">
+                      IA Gemini
+                    </span>
+                  </span>
+                  <span className="text-[10px] text-purple-200/90 font-normal">
+                    Cálculo Reprovado • Dimensionar Automaticamente
+                  </span>
+                </div>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOptimizeProfile}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded bg-[#262a33] hover:bg-[#31353e] text-[#dfe2ee] border border-[#3e4850] font-mono text-xs transition-colors active:scale-[0.98]"
+              >
+                <span className="material-symbols-outlined text-[#89ceff] text-lg">auto_fix_high</span>
+                <span>Otimizar Perfil (Economia de Aço)</span>
+              </button>
+            )}
           </div>
         </div>
       </section>
+
+      {/* Modal de Proposição de Perfil Ideal com Motor IA */}
+      <AiProfileProposalModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        proposal={aiProposal}
+        isLoading={isAiLoading}
+        currentProfile={profile}
+        currentResults={calcResults}
+        steelGrade={steelGrade}
+        norm={norm}
+        loads={loads}
+        onApplyProfile={(newProfile) => {
+          onSelectProfile?.(newProfile);
+          setIsAiModalOpen(false);
+        }}
+        onRefreshAi={handleTriggerAiEngine}
+      />
     </div>
   );
 };

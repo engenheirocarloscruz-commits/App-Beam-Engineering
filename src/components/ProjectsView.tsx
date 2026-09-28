@@ -35,11 +35,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
   onStartCalculation,
   onOpenProfileCatalog,
   onSelectProfile,
-  projectName = 'Viga Cobertura Galpão B',
-  professionalId = 'CREA/SP: 5069812-4 / D',
-  engineerName = 'Eng. Carlos Cruz',
-  companyName = 'Cruz Engenharia Estrutural',
-  studyDate,
+  projectName = '',
+  professionalId = '',
+  engineerName = '',
+  companyName = '',
+  studyDate = '',
   onChangeProjectName,
   onChangeProfessionalId,
   onChangeEngineerName,
@@ -50,9 +50,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
   const [localProfessionalId, setLocalProfessionalId] = React.useState(professionalId);
   const [localEngineer, setLocalEngineer] = React.useState(engineerName);
   const [localCompany, setLocalCompany] = React.useState(companyName);
-  const [localDate, setLocalDate] = React.useState(
-    studyDate || new Date().toISOString().split('T')[0]
-  );
+  const [localDate, setLocalDate] = React.useState(studyDate || '');
 
   React.useEffect(() => {
     if (projectName !== undefined) setLocalProjectName(projectName);
@@ -113,18 +111,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
               </span>
             </div>
             <h1 className="font-headline text-2xl font-semibold text-[#dfe2ee] tracking-tight">
-              Painel de Cálculo & Tipologias
+              Dimensionamento de Vigas metálicas
             </h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="bg-[#181c24] border border-[#3e4850] px-3 py-1.5 rounded flex items-center gap-3">
-              <div>
-                <div className="font-mono text-[10px] text-[#88929b]">MOTOR DE CÁLCULO</div>
-                <div className="font-mono text-sm text-[#4edea3] font-bold">
-                  ESTÁTICO <span className="text-[10px] text-[#4edea3]">ATIVO</span>
-                </div>
-              </div>
-              <div className="h-6 w-[1px] bg-[#3e4850]"></div>
               <div>
                 <div className="font-mono text-[10px] text-[#88929b]">NORMAS</div>
                 <div className="font-mono text-sm text-[#89ceff] font-bold">NBR / AISC</div>
@@ -134,6 +125,99 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
         </div>
       </div>
 
+      {/* Caixa Editável: Identificação do Estudo Técnico */}
+      <section className="bg-[#181c24] border border-[#3e4850] rounded-lg p-4 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#3e4850]/60">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#89ceff] text-[20px]">
+              badge
+            </span>
+            <h3 className="font-headline text-sm font-semibold text-[#dfe2ee]">
+              Identificação do Estudo Técnico
+            </h3>
+          </div>
+          <span className="font-mono text-[10px] text-[#bec8d2]">
+            DADOS DO PROJETO, RESPONSÁVEL, EMPRESA E REGISTRO
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {/* Nome do projeto */}
+          <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
+            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
+              <span className="material-symbols-outlined text-sm text-[#89ceff]">architecture</span>
+              Nome do Projeto
+            </label>
+            <input
+              type="text"
+              value={localProjectName}
+              onChange={(e) => handleProjectNameChange(e.target.value)}
+              placeholder="Ex.: Viga Cobertura Galpão B"
+              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
+            />
+          </div>
+
+          {/* Nome da empresa */}
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
+              <span className="material-symbols-outlined text-sm text-[#89ceff]">business</span>
+              Nome da Empresa
+            </label>
+            <input
+              type="text"
+              value={localCompany}
+              onChange={(e) => handleCompanyChange(e.target.value)}
+              placeholder="Ex.: Cruz Engenharia Estrutural"
+              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
+            />
+          </div>
+
+          {/* Nome do responsável pelo estudo */}
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
+              <span className="material-symbols-outlined text-sm text-[#89ceff]">person</span>
+              Nome do Responsável pelo Estudo
+            </label>
+            <input
+              type="text"
+              value={localEngineer}
+              onChange={(e) => handleEngineerChange(e.target.value)}
+              placeholder="Ex.: Eng. Carlos Cruz"
+              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
+            />
+          </div>
+
+          {/* Registro Profissional */}
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
+              <span className="material-symbols-outlined text-sm text-[#89ceff]">assignment_ind</span>
+              Registro Profissional (CREA / CAU)
+            </label>
+            <input
+              type="text"
+              value={localProfessionalId}
+              onChange={(e) => handleProfessionalIdChange(e.target.value)}
+              placeholder="Ex.: CREA/SP: 5069812-4 / D"
+              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
+            />
+          </div>
+
+          {/* Data do estudo */}
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
+              <span className="material-symbols-outlined text-sm text-[#89ceff]">calendar_today</span>
+              Data do Estudo
+            </label>
+            <input
+              type="date"
+              value={localDate}
+              onChange={(e) => handleDateChange(e.target.value)}
+              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Section: Novo Cálculo Estrutural */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
@@ -142,12 +226,9 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
               add_circle
             </span>
             <h2 className="font-headline text-lg font-semibold text-[#dfe2ee]">
-              Novo Dimensionamento Estrutural
+              Selecione o tipo de apoio.
             </h2>
           </div>
-          <span className="font-mono text-[10px] text-[#88929b] hidden sm:inline">
-            SELECIONE A TOPOLOGIA DOS APOIOS
-          </span>
         </div>
 
         {/* Bento Grid for Support Schemes */}
@@ -341,99 +422,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
             <span className="material-symbols-outlined text-[20px]">play_arrow</span>
             <span>Iniciar Dimensionamento</span>
           </button>
-        </div>
-      </section>
-
-      {/* Caixa Editável: Identificação do Estudo Técnico */}
-      <section className="bg-[#181c24] border border-[#3e4850] rounded-lg p-4 shadow-sm space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#3e4850]/60">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#89ceff] text-[20px]">
-              badge
-            </span>
-            <h3 className="font-headline text-sm font-semibold text-[#dfe2ee]">
-              Identificação do Estudo Técnico
-            </h3>
-          </div>
-          <span className="font-mono text-[10px] text-[#bec8d2]">
-            DADOS DO PROJETO, RESPONSÁVEL, EMPRESA E REGISTRO
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {/* Nome do projeto */}
-          <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
-            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
-              <span className="material-symbols-outlined text-sm text-[#89ceff]">architecture</span>
-              Nome do Projeto
-            </label>
-            <input
-              type="text"
-              value={localProjectName}
-              onChange={(e) => handleProjectNameChange(e.target.value)}
-              placeholder="Ex.: Viga Cobertura Galpão B"
-              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
-            />
-          </div>
-
-          {/* Nome da empresa */}
-          <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
-              <span className="material-symbols-outlined text-sm text-[#89ceff]">business</span>
-              Nome da Empresa
-            </label>
-            <input
-              type="text"
-              value={localCompany}
-              onChange={(e) => handleCompanyChange(e.target.value)}
-              placeholder="Ex.: Cruz Engenharia Estrutural"
-              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
-            />
-          </div>
-
-          {/* Nome do responsável pelo estudo */}
-          <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
-              <span className="material-symbols-outlined text-sm text-[#89ceff]">person</span>
-              Nome do Responsável pelo Estudo
-            </label>
-            <input
-              type="text"
-              value={localEngineer}
-              onChange={(e) => handleEngineerChange(e.target.value)}
-              placeholder="Ex.: Eng. Carlos Cruz"
-              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
-            />
-          </div>
-
-          {/* Registro Profissional */}
-          <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
-              <span className="material-symbols-outlined text-sm text-[#89ceff]">assignment_ind</span>
-              Registro Profissional (CREA / CAU)
-            </label>
-            <input
-              type="text"
-              value={localProfessionalId}
-              onChange={(e) => handleProfessionalIdChange(e.target.value)}
-              placeholder="Ex.: CREA/SP: 5069812-4 / D"
-              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
-            />
-          </div>
-
-          {/* Data do estudo */}
-          <div className="space-y-1.5">
-            <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#bec8d2] font-medium">
-              <span className="material-symbols-outlined text-sm text-[#89ceff]">calendar_today</span>
-              Data do Estudo
-            </label>
-            <input
-              type="date"
-              value={localDate}
-              onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-[#0a0e16] border border-[#3e4850] rounded px-3 py-2 text-xs font-mono text-[#dfe2ee] placeholder-[#88929b] focus:outline-none focus:border-[#89ceff] focus:ring-1 focus:ring-[#89ceff] transition-colors"
-            />
-          </div>
         </div>
       </section>
     </div>

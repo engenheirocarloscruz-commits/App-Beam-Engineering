@@ -25,11 +25,11 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
   norm,
   loads = [],
   supportType = 'SIMPLY_SUPPORTED',
-  projectName = 'Edifício Residencial Alpha - Cobertura Galpão B',
-  professionalId = 'CREA/SP: 5069812-4 / D',
-  engineerName = 'Eng. Carlos Cruz',
-  companyName = 'Cruz Engenharia Estrutural',
-  studyDate = '2026-09-23',
+  projectName = '',
+  professionalId = '',
+  engineerName = '',
+  companyName = '',
+  studyDate = '',
   onBack,
 }) => {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
@@ -59,7 +59,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent(
-      `*Memorial de Cálculo Estrutural - Beam Engineering*\nProjeto: ${projectName}\nViga (L = ${spanLength}m)\nPerfil: ${profile.designation} (${steelGrade.name})\nStatus: ${
+      `*Memorial de Cálculo Estrutural - Beam Engineering*\nProjeto: ${projectName}\nViga V-104 (L = ${spanLength}m)\nPerfil: ${profile.designation} (${steelGrade.name})\nStatus: ${
         !hasLoads
           ? 'AGUARDANDO CARGAS'
           : calcResults.status === 'PASS'
@@ -83,12 +83,12 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
 
   // Support description
   const supportDesc =
-    supportType === 'cantilever'
+    supportType === 'CANTILEVER'
       ? 'Engastada e Livre (Balanço)'
-      : supportType === 'biengastada'
+      : supportType === 'FIXED_FIXED'
       ? 'Bi-engastada (Engaste Perfeito)'
-      : supportType === 'continua'
-      ? 'Contínua (apoios A, C e B)'
+      : supportType === 'PROPPED_CANTILEVER'
+      ? 'Engastada e Apoiada'
       : 'Biapoiada (Apoio de 1º e 2º Gênero)';
 
   // SVG Diagram Coordinates for DEC and DMF
@@ -259,7 +259,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                 <span className="inline-block px-2 py-0.5 rounded bg-slate-100 border border-slate-300 text-xs font-bold text-slate-800">
                   DOCUMENTO: MEM-STR-0104
                 </span>
-                <div className="text-[11px] text-slate-600 mt-1">Data: {studyDate} • REV 01</div>
+                <div className="text-[11px] text-slate-600 mt-1">Data: {studyDate || new Date().toISOString().split('T')[0]} • REV 01</div>
                 <div className="text-[10px] text-slate-500 font-semibold">Norma: {norm}</div>
               </div>
             </div>
@@ -268,16 +268,16 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
             <div className="mt-4 pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 font-mono text-xs text-slate-700 bg-slate-50 p-3 rounded border border-slate-200">
               <div>
                 <span className="text-slate-500 block text-[10px] uppercase font-semibold">Projeto / Obra:</span>
-                <span className="font-semibold text-slate-900">{projectName}</span>
+                <span className="font-semibold text-slate-900">{projectName || 'Não informado'}</span>
               </div>
               <div>
                 <span className="text-slate-500 block text-[10px] uppercase font-semibold">Empresa / Contratada:</span>
-                <span className="font-semibold text-slate-900">{companyName}</span>
+                <span className="font-semibold text-slate-900">{companyName || 'Não informado'}</span>
               </div>
               <div>
                 <span className="text-slate-500 block text-[10px] uppercase font-semibold">Responsável Técnico:</span>
-                <span className="font-semibold text-slate-900">{engineerName}</span>
-                <span className="text-slate-600 block text-[10px]">{professionalId}</span>
+                <span className="font-semibold text-slate-900">{engineerName || 'Não informado'}</span>
+                {professionalId && <span className="text-slate-600 block text-[10px]">{professionalId}</span>}
               </div>
             </div>
           </header>
@@ -430,30 +430,6 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                         {hasLoads ? `${calcResults.reactionB.toFixed(2)} kN` : '—'}
                       </td>
                     </tr>
-                    {calcResults.reactionC !== undefined && (
-                      <tr>
-                        <td className="py-1 px-2 text-slate-600">Reação de Apoio Intermediário C (RC):</td>
-                        <td className="py-1 px-2 text-right font-bold text-slate-900">
-                          {hasLoads ? `${calcResults.reactionC.toFixed(2)} kN` : '—'}
-                        </td>
-                      </tr>
-                    )}
-                    {calcResults.fixedEndMomentA !== undefined && (
-                      <tr>
-                        <td className="py-1 px-2 text-slate-600">Momento no engaste A (M_A):</td>
-                        <td className="py-1 px-2 text-right font-bold text-slate-900">
-                          {hasLoads ? `${calcResults.fixedEndMomentA.toFixed(2)} kN·m` : '—'}
-                        </td>
-                      </tr>
-                    )}
-                    {calcResults.fixedEndMomentB !== undefined && (
-                      <tr>
-                        <td className="py-1 px-2 text-slate-600">Momento no engaste B (M_B):</td>
-                        <td className="py-1 px-2 text-right font-bold text-slate-900">
-                          {hasLoads ? `${calcResults.fixedEndMomentB.toFixed(2)} kN·m` : '—'}
-                        </td>
-                      </tr>
-                    )}
                     <tr className="bg-sky-50/50">
                       <td className="py-1 px-2 text-sky-900 font-semibold">Momento Fletor Solicitante Máx (MSd):</td>
                       <td className="py-1 px-2 text-right font-bold text-sky-900">
