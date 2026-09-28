@@ -61,6 +61,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const hasLoads =
     calcResults.status !== 'NONE' &&
     (loads === undefined || (loads.length > 0 && loads.some((l) => Number(l.value) > 0)));
+
+  const isMomentFailed = hasLoads && calcResults.momentRatio > 100;
+  const isShearFailed = hasLoads && calcResults.shearRatio > 100;
+  const isVonMisesFailed = hasLoads && calcResults.vonMisesRatio > 100;
+  const isDeflectionFailed = hasLoads && calcResults.deflectionRatio > 100;
+  const anyFailed = isMomentFailed || isShearFailed || isVonMisesFailed || isDeflectionFailed;
+
+  const failedCount = [isMomentFailed, isShearFailed, isVonMisesFailed, isDeflectionFailed].filter(Boolean).length;
   // Generate SVG diagram coordinates
   const svgW = 800;
   const svgH = 160;
@@ -220,37 +228,181 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
       )}
 
+      {/* Banner de Evidência e Diagnóstico de Reprovação */}
+      {anyFailed && (
+        <div className="bg-gradient-to-r from-red-950/95 via-[#2b1218] to-[#181c24] border-2 border-red-500 rounded-lg p-4 shadow-2xl shadow-red-950/70 flex flex-col gap-3 animate-fadeIn ring-2 ring-red-500/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-11 h-11 rounded-lg bg-red-600/30 border-2 border-red-500 flex items-center justify-center text-red-300 shrink-0 shadow-lg shadow-red-950/60">
+                <span className="material-symbols-outlined text-2xl animate-pulse">report</span>
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-sm font-black text-red-300 uppercase tracking-wider">
+                    {failedCount === 1 ? '1 Parâmetro Reprovado em Evidência' : `${failedCount} Parâmetros Reprovados em Evidência`}
+                  </span>
+                  <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-red-600 text-white shadow-sm flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                    ESTRUTURA REPROVADA
+                  </span>
+                </div>
+                <p className="text-xs text-red-200 mt-0.5">
+                  Os quadros destacados em vermelho com a tarja <strong className="text-white font-mono bg-red-900/80 px-1 py-0.2 rounded">EM EVIDÊNCIA • REPROVADO</strong> ressaltam com precisão matemática os motivos de não conformidade da viga ({norm}).
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleTriggerAiEngine}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-sky-600 hover:from-purple-500 hover:to-sky-500 text-white rounded-md font-mono text-xs font-bold shadow-lg shadow-purple-950/60 transition-all shrink-0 active:scale-95 border border-purple-400/40"
+            >
+              <span className="material-symbols-outlined text-sm animate-pulse">auto_awesome</span>
+              Resolver com Motor IA
+            </button>
+          </div>
+
+          {/* Quick pills of failed parameters */}
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-red-500/30 text-xs font-mono">
+            <span className="text-red-400 font-bold uppercase text-[10px] flex items-center gap-1">
+              <span className="material-symbols-outlined text-xs">priority_high</span> Motivos Críticos:
+            </span>
+            {isMomentFailed && (
+              <span className="px-2 py-0.5 rounded bg-red-950 border border-red-500/80 text-red-200 text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                <span>Flexão:</span>
+                <span className="text-white">MSd ({Math.abs(calcResults.maxMoment).toFixed(1)} kNm) &gt; MRd ({calcResults.momentCapacity_Mrd.toFixed(1)} kNm)</span>
+                <span className="text-red-400 font-extrabold">[+{(calcResults.momentRatio - 100).toFixed(1)}%]</span>
+              </span>
+            )}
+            {isShearFailed && (
+              <span className="px-2 py-0.5 rounded bg-red-950 border border-red-500/80 text-red-200 text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                <span>Cisalhamento:</span>
+                <span className="text-white">VSd ({Math.max(Math.abs(calcResults.maxShearPos), Math.abs(calcResults.maxShearNeg)).toFixed(1)} kN) &gt; VRd ({calcResults.shearCapacity_Vrd.toFixed(1)} kN)</span>
+                <span className="text-red-400 font-extrabold">[+{(calcResults.shearRatio - 100).toFixed(1)}%]</span>
+              </span>
+            )}
+            {isVonMisesFailed && (
+              <span className="px-2 py-0.5 rounded bg-red-950 border border-red-500/80 text-red-200 text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                <span>Von Mises:</span>
+                <span className="text-white">σ_VM ({calcResults.vonMisesMax.toFixed(1)} MPa) &gt; fyd ({calcResults.allowableStress_fyd.toFixed(1)} MPa)</span>
+                <span className="text-red-400 font-extrabold">[+{(calcResults.vonMisesRatio - 100).toFixed(1)}%]</span>
+              </span>
+            )}
+            {isDeflectionFailed && (
+              <span className="px-2 py-0.5 rounded bg-red-950 border border-red-500/80 text-red-200 text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                <span>Flecha:</span>
+                <span className="text-white">δmáx ({calcResults.maxDeflection.toFixed(1)} mm) &gt; δadm ({calcResults.allowableDeflection.toFixed(1)} mm)</span>
+                <span className="text-red-400 font-extrabold">[+{(calcResults.deflectionRatio - 100).toFixed(1)}%]</span>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Bento Grid 1: Verification KPI Cards & Reaction Values */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         {/* Card 1: Flexion Capacity */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded p-3.5 flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#0ea5e9]/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div className={`rounded p-3.5 flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${
+          isMomentFailed
+            ? 'bg-gradient-to-b from-[#3a0e16] via-[#260e14] to-[#181c24] border-2 border-red-500 shadow-2xl shadow-red-950/90 ring-4 ring-red-500/50 scale-[1.02] z-20'
+            : anyFailed
+            ? 'bg-[#181c24] border border-[#3e4850] opacity-80 hover:opacity-100'
+            : 'bg-[#181c24] border border-[#3e4850]'
+        }`}>
+          {isMomentFailed && (
+            <>
+              {/* Prominent Evidence Header Ribbon */}
+              <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-mono text-[10px] font-black uppercase px-3 py-1.5 tracking-wider flex items-center justify-between -mx-3.5 -mt-3.5 mb-3 shadow-md border-b border-red-400/40">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • REPROVADO
+                </span>
+                <span className="text-[9px] bg-red-950 px-1.5 py-0.5 rounded border border-red-400/40 font-bold">
+                  ELU • FLEXÃO
+                </span>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/30 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
+            </>
+          )}
+          {!isMomentFailed && (
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#0ea5e9]/5 rounded-full blur-2xl pointer-events-none"></div>
+          )}
+
           <div>
             <div className="flex justify-between items-start mb-2">
-              <span className="font-mono text-xs text-[#bec8d2] font-medium">Flexão Normal (ELU)</span>
-              <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border ${
+              <span className={`font-mono text-xs font-semibold flex items-center gap-1 ${isMomentFailed ? 'text-red-300 font-bold' : 'text-[#bec8d2]'}`}>
+                {isMomentFailed && <span className="material-symbols-outlined text-base text-red-400 animate-pulse">error</span>}
+                Flexão Normal (ELU)
+              </span>
+              <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border transition-all ${
                 !hasLoads
                   ? 'bg-[#262a33] text-[#88929b] border-[#3e4850]'
-                  : calcResults.momentRatio <= 100
-                  ? 'bg-[#00b17b]/15 text-[#4edea3] border-[#00b17b]/30'
-                  : 'bg-[#93000a]/20 text-[#ffb4ab] border-[#93000a]'
+                  : isMomentFailed
+                  ? 'bg-red-950 text-red-100 border-red-500 shadow-sm animate-pulse flex items-center gap-1 font-black'
+                  : 'bg-[#00b17b]/15 text-[#4edea3] border-[#00b17b]/30'
               }`}>
-                {!hasLoads ? '—' : calcResults.momentRatio <= 100 ? 'PASS' : 'FAIL'}
+                {!hasLoads ? (
+                  '—'
+                ) : isMomentFailed ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    REPROVADO
+                  </>
+                ) : (
+                  'PASS'
+                )}
               </span>
             </div>
+
             <div className="flex items-baseline gap-2">
-              <span className="font-mono text-2xl font-bold text-[#dfe2ee]">
+              <span className={`font-mono text-3xl font-black ${isMomentFailed ? 'text-red-400 drop-shadow' : 'text-[#dfe2ee]'}`}>
                 {calcResults.momentRatio.toFixed(1)}%
               </span>
               <span className="font-mono text-[10px] text-[#bec8d2]">MSd / MRd</span>
             </div>
-            <div className="w-full bg-[#31353e] h-1.5 rounded mt-2.5 overflow-hidden">
+
+            <div className="w-full bg-[#31353e] h-2 rounded mt-2.5 overflow-hidden">
               <div
-                className={`h-full rounded ${calcResults.momentRatio <= 100 ? 'bg-[#89ceff]' : 'bg-[#ffb4ab]'}`}
+                className={`h-full rounded ${isMomentFailed ? 'bg-red-500 shadow-sm shadow-red-500/80' : 'bg-[#89ceff]'}`}
                 style={{ width: `${Math.min(calcResults.momentRatio, 100)}%` }}
               ></div>
             </div>
+
+            {/* Quadro Detalhado em Evidência do Motivo de Reprovação */}
+            {isMomentFailed && (
+              <div className="mt-3 bg-red-950/95 border-2 border-red-500/80 rounded-md p-2.5 text-[11px] font-mono text-red-100 shadow-lg">
+                <div className="font-extrabold text-red-300 flex items-center gap-1.5 pb-1 border-b border-red-500/40 uppercase tracking-wide text-[10px]">
+                  <span className="material-symbols-outlined text-sm text-red-400 animate-pulse">warning</span>
+                  POR QUE A VIGA ESTÁ REPROVADA?
+                </div>
+                <div className="mt-1.5 space-y-1 text-[10px] leading-snug">
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Momento Solicitante (MSd):</span>
+                    <span className="font-black text-white bg-red-900/80 px-1.5 py-0.5 rounded border border-red-400/30">
+                      {Math.abs(calcResults.maxMoment).toFixed(1)} kNm
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Capacidade Resistente (MRd):</span>
+                    <span className="font-bold text-red-200">{calcResults.momentCapacity_Mrd.toFixed(1)} kNm</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-red-500/30">
+                    <span className="text-red-300 font-semibold">Excesso de Carga:</span>
+                    <span className="font-black text-red-300">
+                      +{(Math.abs(calcResults.maxMoment) - calcResults.momentCapacity_Mrd).toFixed(1)} kNm (+{(calcResults.momentRatio - 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                  <p className="mt-1 pt-1 border-t border-red-500/30 text-[10px] text-red-200/90 leading-tight">
+                    O momento solicitante excede a capacidade de projeto da seção do perfil. Risco de plastificação e colapso por flexão.
+                  </p>
+                  <p className="text-[9px] text-amber-300 font-semibold mt-0.5">
+                    💡 Solução: Adotar perfil com maior altura (d) ou maior módulo de resistência (Wx / Zx).
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="mt-3 pt-2 border-t border-[#3e4850]/60 flex justify-between font-mono text-[10px] text-[#bec8d2]">
             <span>MSd = {Math.abs(calcResults.maxMoment).toFixed(1)} kNm</span>
             <span>MRd = {calcResults.momentCapacity_Mrd.toFixed(1)} kNm</span>
@@ -258,31 +410,105 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {/* Card 2: Shear Capacity */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded p-3.5 flex flex-col justify-between relative overflow-hidden">
+        <div className={`rounded p-3.5 flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${
+          isShearFailed
+            ? 'bg-gradient-to-b from-[#3a0e16] via-[#260e14] to-[#181c24] border-2 border-red-500 shadow-2xl shadow-red-950/90 ring-4 ring-red-500/50 scale-[1.02] z-20'
+            : anyFailed
+            ? 'bg-[#181c24] border border-[#3e4850] opacity-80 hover:opacity-100'
+            : 'bg-[#181c24] border border-[#3e4850]'
+        }`}>
+          {isShearFailed && (
+            <>
+              {/* Prominent Evidence Header Ribbon */}
+              <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-mono text-[10px] font-black uppercase px-3 py-1.5 tracking-wider flex items-center justify-between -mx-3.5 -mt-3.5 mb-3 shadow-md border-b border-red-400/40">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • REPROVADO
+                </span>
+                <span className="text-[9px] bg-red-950 px-1.5 py-0.5 rounded border border-red-400/40 font-bold">
+                  ELU • CISALHAMENTO
+                </span>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/30 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
+            </>
+          )}
+
           <div>
             <div className="flex justify-between items-start mb-2">
-              <span className="font-mono text-xs text-[#bec8d2] font-medium">Cisalhamento (ELU)</span>
-              <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border ${
+              <span className={`font-mono text-xs font-semibold flex items-center gap-1 ${isShearFailed ? 'text-red-300 font-bold' : 'text-[#bec8d2]'}`}>
+                {isShearFailed && <span className="material-symbols-outlined text-base text-red-400 animate-pulse">error</span>}
+                Cisalhamento (ELU)
+              </span>
+              <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border transition-all ${
                 !hasLoads
                   ? 'bg-[#262a33] text-[#88929b] border-[#3e4850]'
+                  : isShearFailed
+                  ? 'bg-red-950 text-red-100 border-red-500 shadow-sm animate-pulse flex items-center gap-1 font-black'
                   : 'bg-[#00b17b]/15 text-[#4edea3] border-[#00b17b]/30'
               }`}>
-                {!hasLoads ? '—' : 'PASS'}
+                {!hasLoads ? (
+                  '—'
+                ) : isShearFailed ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    REPROVADO
+                  </>
+                ) : (
+                  'PASS'
+                )}
               </span>
             </div>
+
             <div className="flex items-baseline gap-2">
-              <span className="font-mono text-2xl font-bold text-[#dfe2ee]">
+              <span className={`font-mono text-3xl font-black ${isShearFailed ? 'text-red-400 drop-shadow' : 'text-[#dfe2ee]'}`}>
                 {calcResults.shearRatio.toFixed(1)}%
               </span>
               <span className="font-mono text-[10px] text-[#bec8d2]">VSd / VRd</span>
             </div>
-            <div className="w-full bg-[#31353e] h-1.5 rounded mt-2.5 overflow-hidden">
+
+            <div className="w-full bg-[#31353e] h-2 rounded mt-2.5 overflow-hidden">
               <div
-                className="bg-[#4edea3] h-full rounded"
+                className={`h-full rounded ${isShearFailed ? 'bg-red-500 shadow-sm shadow-red-500/80' : 'bg-[#4edea3]'}`}
                 style={{ width: `${Math.min(calcResults.shearRatio, 100)}%` }}
               ></div>
             </div>
+
+            {/* Quadro Detalhado em Evidência do Motivo de Reprovação */}
+            {isShearFailed && (
+              <div className="mt-3 bg-red-950/95 border-2 border-red-500/80 rounded-md p-2.5 text-[11px] font-mono text-red-100 shadow-lg">
+                <div className="font-extrabold text-red-300 flex items-center gap-1.5 pb-1 border-b border-red-500/40 uppercase tracking-wide text-[10px]">
+                  <span className="material-symbols-outlined text-sm text-red-400 animate-pulse">warning</span>
+                  POR QUE A VIGA ESTÁ REPROVADA?
+                </div>
+                <div className="mt-1.5 space-y-1 text-[10px] leading-snug">
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Cortante Solicitante (VSd):</span>
+                    <span className="font-black text-white bg-red-900/80 px-1.5 py-0.5 rounded border border-red-400/30">
+                      {Math.max(Math.abs(calcResults.maxShearPos), Math.abs(calcResults.maxShearNeg)).toFixed(1)} kN
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Capacidade Resistente (VRd):</span>
+                    <span className="font-bold text-red-200">{calcResults.shearCapacity_Vrd.toFixed(1)} kN</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-red-500/30">
+                    <span className="text-red-300 font-semibold">Excesso de Cortante:</span>
+                    <span className="font-black text-red-300">
+                      +{(Math.max(Math.abs(calcResults.maxShearPos), Math.abs(calcResults.maxShearNeg)) - calcResults.shearCapacity_Vrd).toFixed(1)} kN (+{(calcResults.shearRatio - 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                  <p className="mt-1 pt-1 border-t border-red-500/30 text-[10px] text-red-200/90 leading-tight">
+                    O esforço cortante solicitante superou a resistência de cálculo ao cisalhamento da alma. Risco de escoamento por cisalhamento ou flambagem local da alma.
+                  </p>
+                  <p className="text-[9px] text-amber-300 font-semibold mt-0.5">
+                    💡 Solução: Adotar perfil com alma mais espessa (tw) ou adicionar enrijecedores transversais.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="mt-3 pt-2 border-t border-[#3e4850]/60 flex justify-between font-mono text-[10px] text-[#bec8d2]">
             <span>VSd = {Math.max(Math.abs(calcResults.maxShearPos), Math.abs(calcResults.maxShearNeg)).toFixed(1)} kN</span>
             <span>VRd = {calcResults.shearCapacity_Vrd.toFixed(1)} kN</span>
@@ -290,46 +516,116 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {/* Card 3: Von Mises Equivalent Stress */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded p-3.5 flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-[#c084fc]/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div className={`rounded p-3.5 flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${
+          isVonMisesFailed
+            ? 'bg-gradient-to-b from-[#3a0e16] via-[#260e14] to-[#181c24] border-2 border-red-500 shadow-2xl shadow-red-950/90 ring-4 ring-red-500/50 scale-[1.02] z-20'
+            : anyFailed
+            ? 'bg-[#181c24] border border-[#3e4850] opacity-80 hover:opacity-100'
+            : 'bg-[#181c24] border border-[#3e4850]'
+        }`}>
+          {isVonMisesFailed ? (
+            <>
+              {/* Prominent Evidence Header Ribbon */}
+              <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-mono text-[10px] font-black uppercase px-3 py-1.5 tracking-wider flex items-center justify-between -mx-3.5 -mt-3.5 mb-3 shadow-md border-b border-red-400/40">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • REPROVADO
+                </span>
+                <span className="text-[9px] bg-red-950 px-1.5 py-0.5 rounded border border-red-400/40 font-bold">
+                  ELU • TENSÃO EQUIV.
+                </span>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/30 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
+            </>
+          ) : (
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#c084fc]/10 rounded-full blur-2xl pointer-events-none"></div>
+          )}
+
           <div>
             <div className="flex justify-between items-start mb-2">
-              <span className="font-mono text-xs text-[#c084fc] font-semibold flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm text-[#c084fc]">speed</span>
+              <span className={`font-mono text-xs font-semibold flex items-center gap-1 ${isVonMisesFailed ? 'text-red-300 font-bold' : 'text-[#c084fc]'}`}>
+                <span className={`material-symbols-outlined text-base ${isVonMisesFailed ? 'text-red-400 animate-pulse' : 'text-[#c084fc]'}`}>speed</span>
                 Von Mises (σ_VM)
               </span>
-              <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border ${
+              <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border transition-all ${
                 !hasLoads
                   ? 'bg-[#262a33] text-[#88929b] border-[#3e4850]'
-                  : calcResults.vonMisesRatio <= 100
-                  ? 'bg-[#00b17b]/15 text-[#4edea3] border-[#00b17b]/30'
-                  : 'bg-[#93000a]/20 text-[#ffb4ab] border-[#93000a]'
+                  : isVonMisesFailed
+                  ? 'bg-red-950 text-red-100 border-red-500 shadow-sm animate-pulse flex items-center gap-1 font-black'
+                  : 'bg-[#00b17b]/15 text-[#4edea3] border-[#00b17b]/30'
               }`}>
-                {!hasLoads ? '—' : calcResults.vonMisesRatio <= 100 ? 'PASS' : 'FAIL'}
+                {!hasLoads ? (
+                  '—'
+                ) : isVonMisesFailed ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    REPROVADO
+                  </>
+                ) : (
+                  'PASS'
+                )}
               </span>
             </div>
+
             <div className="flex items-baseline gap-1.5">
-              <span className="font-mono text-2xl font-bold text-[#dfe2ee]">
+              <span className={`font-mono text-3xl font-black ${isVonMisesFailed ? 'text-red-400 drop-shadow' : 'text-[#dfe2ee]'}`}>
                 {calcResults.vonMisesMax.toFixed(1)}
               </span>
-              <span className="font-mono text-xs text-[#c084fc] font-semibold">MPa</span>
+              <span className={`font-mono text-xs font-semibold ${isVonMisesFailed ? 'text-red-300' : 'text-[#c084fc]'}`}>MPa</span>
               <span className="font-mono text-[10px] text-[#bec8d2] ml-auto">
                 {calcResults.vonMisesRatio}% de fyd
               </span>
             </div>
-            <div className="w-full bg-[#31353e] h-1.5 rounded mt-2.5 overflow-hidden">
+
+            <div className="w-full bg-[#31353e] h-2 rounded mt-2.5 overflow-hidden">
               <div
                 className={`h-full rounded transition-all ${
-                  calcResults.vonMisesRatio <= 85
+                  isVonMisesFailed
+                    ? 'bg-red-500 shadow-sm shadow-red-500/80'
+                    : calcResults.vonMisesRatio <= 85
                     ? 'bg-[#c084fc]'
-                    : calcResults.vonMisesRatio <= 100
-                    ? 'bg-[#ffb95f]'
-                    : 'bg-[#ffb4ab]'
+                    : 'bg-[#ffb95f]'
                 }`}
                 style={{ width: `${Math.min(calcResults.vonMisesRatio, 100)}%` }}
               ></div>
             </div>
+
+            {/* Quadro Detalhado em Evidência do Motivo de Reprovação */}
+            {isVonMisesFailed && (
+              <div className="mt-3 bg-red-950/95 border-2 border-red-500/80 rounded-md p-2.5 text-[11px] font-mono text-red-100 shadow-lg">
+                <div className="font-extrabold text-red-300 flex items-center gap-1.5 pb-1 border-b border-red-500/40 uppercase tracking-wide text-[10px]">
+                  <span className="material-symbols-outlined text-sm text-red-400 animate-pulse">warning</span>
+                  POR QUE A VIGA ESTÁ REPROVADA?
+                </div>
+                <div className="mt-1.5 space-y-1 text-[10px] leading-snug">
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Tensão σ_VM Máxima:</span>
+                    <span className="font-black text-white bg-red-900/80 px-1.5 py-0.5 rounded border border-red-400/30">
+                      {calcResults.vonMisesMax.toFixed(1)} MPa
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Limite de Escoamento (fyd):</span>
+                    <span className="font-bold text-red-200">{calcResults.allowableStress_fyd.toFixed(1)} MPa</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-red-500/30">
+                    <span className="text-red-300 font-semibold">Excesso de Tensão:</span>
+                    <span className="font-black text-red-300">
+                      +{(calcResults.vonMisesMax - calcResults.allowableStress_fyd).toFixed(1)} MPa (+{(calcResults.vonMisesRatio - 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                  <p className="mt-1 pt-1 border-t border-red-500/30 text-[10px] text-red-200/90 leading-tight">
+                    O critério de energia de distorção de Von Mises (√(σ² + 3τ²)) superou a resistência de cálculo do aço. O material entra em plastificação sob o carregamento combinado.
+                  </p>
+                  <p className="text-[9px] text-amber-300 font-semibold mt-0.5">
+                    💡 Solução: Aumentar as dimensões gerais da seção ou utilizar aço com maior f_y.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="mt-3 pt-2 border-t border-[#3e4850]/60 flex justify-between font-mono text-[10px] text-[#bec8d2]">
             <span>fyd = {calcResults.allowableStress_fyd.toFixed(1)} MPa</span>
             <span>x = {calcResults.vonMisesMaxX.toFixed(2)}m</span>
@@ -337,45 +633,121 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {/* Card 4: Deflection ELS */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded p-3.5 flex flex-col justify-between">
+        <div className={`rounded p-3.5 flex flex-col justify-between relative overflow-hidden transition-all duration-300 ${
+          isDeflectionFailed
+            ? 'bg-gradient-to-b from-[#3a0e16] via-[#260e14] to-[#181c24] border-2 border-red-500 shadow-2xl shadow-red-950/90 ring-4 ring-red-500/50 scale-[1.02] z-20'
+            : anyFailed
+            ? 'bg-[#181c24] border border-[#3e4850] opacity-80 hover:opacity-100'
+            : 'bg-[#181c24] border border-[#3e4850]'
+        }`}>
+          {isDeflectionFailed && (
+            <>
+              {/* Prominent Evidence Header Ribbon */}
+              <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-mono text-[10px] font-black uppercase px-3 py-1.5 tracking-wider flex items-center justify-between -mx-3.5 -mt-3.5 mb-3 shadow-md border-b border-red-400/40">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • REPROVADO
+                </span>
+                <span className="text-[9px] bg-red-950 px-1.5 py-0.5 rounded border border-red-400/40 font-bold">
+                  ELS • FLECHA
+                </span>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/30 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
+            </>
+          )}
+
           <div>
             <div className="flex justify-between items-start mb-2">
-              <span className="font-mono text-xs text-[#bec8d2] font-medium">Flecha Máxima (ELS)</span>
-              <span className={`px-1.5 py-0.5 rounded font-mono text-[10px] font-bold border ${
+              <span className={`font-mono text-xs font-semibold flex items-center gap-1 ${isDeflectionFailed ? 'text-red-300 font-bold' : 'text-[#bec8d2]'}`}>
+                {isDeflectionFailed && <span className="material-symbols-outlined text-base text-red-400 animate-pulse">error</span>}
+                Flecha Máxima (ELS)
+              </span>
+              <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border transition-all ${
                 !hasLoads
                   ? 'bg-[#262a33] text-[#88929b] border-[#3e4850]'
+                  : isDeflectionFailed
+                  ? 'bg-red-950 text-red-100 border-red-500 shadow-sm animate-pulse flex items-center gap-1 font-black'
                   : calcResults.deflectionRatio <= 100
                   ? 'bg-[#00b17b]/15 text-[#4edea3] border-[#00b17b]/30'
                   : 'bg-[#ee9800]/20 text-[#ffb4ab] border-[#ee9800]/40'
               }`}>
-                {!hasLoads ? '—' : `${calcResults.deflectionRatio.toFixed(1)}%`}
+                {!hasLoads ? (
+                  '—'
+                ) : isDeflectionFailed ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                    REPROVADO
+                  </>
+                ) : (
+                  `${calcResults.deflectionRatio.toFixed(1)}%`
+                )}
               </span>
             </div>
+
             <div className="flex items-baseline gap-2">
-              <span className="font-mono text-2xl font-bold text-[#ffb95f]">
+              <span className={`font-mono text-3xl font-black ${isDeflectionFailed ? 'text-red-400 drop-shadow' : 'text-[#ffb95f]'}`}>
                 {calcResults.maxDeflection.toFixed(1)} <span className="text-xs font-normal">mm</span>
               </span>
               <span className="font-mono text-[10px] text-[#bec8d2]">
-                δmax em x = {calcResults.maxDeflectionX.toFixed(2)}m
+                δmáx em x = {calcResults.maxDeflectionX.toFixed(2)}m
               </span>
             </div>
-            <div className="w-full bg-[#31353e] h-1.5 rounded mt-2.5 overflow-hidden">
+
+            <div className="w-full bg-[#31353e] h-2 rounded mt-2.5 overflow-hidden">
               <div
-                className="bg-[#ffb95f] h-full rounded"
+                className={`h-full rounded ${isDeflectionFailed ? 'bg-red-500 shadow-sm shadow-red-500/80' : 'bg-[#ffb95f]'}`}
                 style={{ width: `${Math.min(calcResults.deflectionRatio, 100)}%` }}
               ></div>
             </div>
+
+            {/* Quadro Detalhado em Evidência do Motivo de Reprovação */}
+            {isDeflectionFailed && (
+              <div className="mt-3 bg-red-950/95 border-2 border-red-500/80 rounded-md p-2.5 text-[11px] font-mono text-red-100 shadow-lg">
+                <div className="font-extrabold text-red-300 flex items-center gap-1.5 pb-1 border-b border-red-500/40 uppercase tracking-wide text-[10px]">
+                  <span className="material-symbols-outlined text-sm text-red-400 animate-pulse">warning</span>
+                  POR QUE A VIGA ESTÁ REPROVADA?
+                </div>
+                <div className="mt-1.5 space-y-1 text-[10px] leading-snug">
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Flecha Máxima Real (δmáx):</span>
+                    <span className="font-black text-white bg-red-900/80 px-1.5 py-0.5 rounded border border-red-400/30">
+                      {calcResults.maxDeflection.toFixed(1)} mm
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-red-300 font-semibold">Limite Admissível (L/350):</span>
+                    <span className="font-bold text-red-200">{calcResults.allowableDeflection.toFixed(1)} mm</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1 border-t border-red-500/30">
+                    <span className="text-red-300 font-semibold">Deformação Excedente:</span>
+                    <span className="font-black text-red-300">
+                      +{(calcResults.maxDeflection - calcResults.allowableDeflection).toFixed(1)} mm (+{(calcResults.deflectionRatio - 100).toFixed(1)}%)
+                    </span>
+                  </div>
+                  <p className="mt-1 pt-1 border-t border-red-500/30 text-[10px] text-red-200/90 leading-tight">
+                    A flecha em serviço superou o limite normativo L/350. Provoca deformação visual inaceitável, fissuração de alvenarias e forros ou desconforto aos ocupantes.
+                  </p>
+                  <p className="text-[9px] text-amber-300 font-semibold mt-0.5">
+                    💡 Solução: Aumentar a inércia (Ix) da seção ou a altura d do perfil, ou prever contraflecha.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="mt-3 pt-2 border-t border-[#3e4850]/60 flex justify-between font-mono text-[10px] text-[#bec8d2]">
             <span>Limite L/350 = {calcResults.allowableDeflection.toFixed(1)} mm</span>
-            <span className={calcResults.deflectionRatio <= 100 ? 'text-[#4edea3]' : 'text-[#ffb95f]'}>
-              {calcResults.deflectionRatio <= 100 ? 'Conforme' : 'Atenção'}
+            <span className={isDeflectionFailed ? 'text-red-400 font-black' : calcResults.deflectionRatio <= 100 ? 'text-[#4edea3]' : 'text-[#ffb95f]'}>
+              {isDeflectionFailed ? 'NÃO CONFORME' : calcResults.deflectionRatio <= 100 ? 'Conforme' : 'Atenção'}
             </span>
           </div>
         </div>
 
         {/* Card 5: Support Reactions */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded p-3.5 flex flex-col justify-between">
+        <div className={`bg-[#181c24] border border-[#3e4850] rounded p-3.5 flex flex-col justify-between transition-all duration-300 ${
+          anyFailed ? 'opacity-80 hover:opacity-100' : ''
+        }`}>
           <div className="flex justify-between items-center mb-1">
             <span className="font-mono text-xs text-[#bec8d2] font-medium">Reações nos Apoios</span>
             <span className="material-symbols-outlined text-[#88929b] text-base">balance</span>
@@ -406,13 +778,23 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       {/* Structural Diagrams Viewport Stack */}
       <section className="space-y-3">
         {/* Diagram 1: DEC (Shear) */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded overflow-hidden">
-          <div className="px-4 py-2 bg-[#0a0e16] border-b border-[#3e4850] flex flex-wrap items-center justify-between gap-2">
+        <div className={`bg-[#181c24] rounded overflow-hidden transition-all duration-300 ${
+          isShearFailed ? 'border-2 border-red-500 shadow-xl shadow-red-950/70 ring-2 ring-red-500/30' : 'border border-[#3e4850]'
+        }`}>
+          <div className={`px-4 py-2 border-b flex flex-wrap items-center justify-between gap-2 transition-colors ${
+            isShearFailed ? 'bg-[#291016] border-red-500/50' : 'bg-[#0a0e16] border-[#3e4850]'
+          }`}>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded bg-[#89ceff]"></span>
+              <span className={`w-2.5 h-2.5 rounded ${isShearFailed ? 'bg-red-500 animate-ping' : 'bg-[#89ceff]'}`}></span>
               <span className="font-mono text-xs text-[#dfe2ee] font-semibold">
                 Diagrama de Esforço Cortante (DEC • V)
               </span>
+              {isShearFailed && (
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-red-600 text-white flex items-center gap-1 shadow animate-pulse ml-1">
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • CISALHAMENTO REPROVADO (VSd &gt; VRd)
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3 font-mono text-[10px]">
               <span className="text-[#bec8d2]">
@@ -468,17 +850,31 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {/* Diagram 2: DMF (Moment) */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded overflow-hidden">
-          <div className="px-4 py-2 bg-[#0a0e16] border-b border-[#3e4850] flex flex-wrap items-center justify-between gap-2">
+        <div className={`bg-[#181c24] rounded overflow-hidden transition-all duration-300 ${
+          isMomentFailed ? 'border-2 border-red-500 shadow-xl shadow-red-950/70 ring-2 ring-red-500/30' : 'border border-[#3e4850]'
+        }`}>
+          <div className={`px-4 py-2 border-b flex flex-wrap items-center justify-between gap-2 transition-colors ${
+            isMomentFailed ? 'bg-[#291016] border-red-500/50' : 'bg-[#0a0e16] border-[#3e4850]'
+          }`}>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded bg-[#0ea5e9]"></span>
+              <span className={`w-2.5 h-2.5 rounded ${isMomentFailed ? 'bg-red-500 animate-ping' : 'bg-[#0ea5e9]'}`}></span>
               <span className="font-mono text-xs text-[#dfe2ee] font-semibold">
                 Diagrama de Momento Fletor (DMF • M)
               </span>
+              {isMomentFailed && (
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-red-600 text-white flex items-center gap-1 shadow animate-pulse ml-1">
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • MOMENTO REPROVADO (MSd &gt; MRd)
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2 font-mono text-[10px]">
               <span className="text-[#bec8d2]">Tração nas Fibras Inferiores (↓)</span>
-              <span className="bg-[#0ea5e9]/10 text-[#89ceff] px-2 py-0.5 rounded border border-[#0ea5e9]/20 font-semibold">
+              <span className={`px-2 py-0.5 rounded border font-semibold ${
+                isMomentFailed
+                  ? 'bg-red-950 text-red-300 border-red-500/60'
+                  : 'bg-[#0ea5e9]/10 text-[#89ceff] border-[#0ea5e9]/20'
+              }`}>
                 Mmáx = {Math.abs(calcResults.maxMoment).toFixed(1)} kNm
               </span>
             </div>
@@ -524,17 +920,27 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {/* Diagram 3: Linha Elástica */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded overflow-hidden">
-          <div className="px-4 py-2 bg-[#0a0e16] border-b border-[#3e4850] flex flex-wrap items-center justify-between gap-2">
+        <div className={`bg-[#181c24] rounded overflow-hidden transition-all duration-300 ${
+          isDeflectionFailed ? 'border-2 border-red-500 shadow-xl shadow-red-950/70 ring-2 ring-red-500/30' : 'border border-[#3e4850]'
+        }`}>
+          <div className={`px-4 py-2 border-b flex flex-wrap items-center justify-between gap-2 transition-colors ${
+            isDeflectionFailed ? 'bg-[#291016] border-red-500/50' : 'bg-[#0a0e16] border-[#3e4850]'
+          }`}>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded bg-[#4edea3]"></span>
+              <span className={`w-2.5 h-2.5 rounded ${isDeflectionFailed ? 'bg-red-500 animate-ping' : 'bg-[#4edea3]'}`}></span>
               <span className="font-mono text-xs text-[#dfe2ee] font-semibold">
                 Linha Elástica / Deformação Real (δ)
               </span>
+              {isDeflectionFailed && (
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-red-600 text-white flex items-center gap-1 shadow animate-pulse ml-1">
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • FLECHA REPROVADA (δmáx &gt; δadm)
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3 font-mono text-[10px]">
               <span className="text-[#bec8d2]">δadm = {calcResults.allowableDeflection.toFixed(1)} mm (L/350)</span>
-              <span className="text-[#4edea3] font-semibold">
+              <span className={isDeflectionFailed ? 'text-red-300 font-bold' : 'text-[#4edea3] font-semibold'}>
                 δmáx = {calcResults.maxDeflection.toFixed(1)} mm @ x={calcResults.maxDeflectionX.toFixed(2)}m
               </span>
             </div>
@@ -587,13 +993,23 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {/* Diagram 4: Tensão Equivalente de Von Mises (σ_VM) */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded overflow-hidden">
-          <div className="px-4 py-2 bg-[#0a0e16] border-b border-[#3e4850] flex flex-wrap items-center justify-between gap-2">
+        <div className={`bg-[#181c24] rounded overflow-hidden transition-all duration-300 ${
+          isVonMisesFailed ? 'border-2 border-red-500 shadow-xl shadow-red-950/70 ring-2 ring-red-500/30' : 'border border-[#3e4850]'
+        }`}>
+          <div className={`px-4 py-2 border-b flex flex-wrap items-center justify-between gap-2 transition-colors ${
+            isVonMisesFailed ? 'bg-[#291016] border-red-500/50' : 'bg-[#0a0e16] border-[#3e4850]'
+          }`}>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded bg-[#c084fc]"></span>
+              <span className={`w-2.5 h-2.5 rounded ${isVonMisesFailed ? 'bg-red-500 animate-ping' : 'bg-[#c084fc]'}`}></span>
               <span className="font-mono text-xs text-[#dfe2ee] font-semibold">
                 Diagrama de Tensão Equivalente de Von Mises (σ_VM = √(σ² + 3τ²))
               </span>
+              {isVonMisesFailed && (
+                <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-red-600 text-white flex items-center gap-1 shadow animate-pulse ml-1">
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  EM EVIDÊNCIA • TENSÃO REPROVADA (σ_VM &gt; fyd)
+                </span>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3 font-mono text-[10px]">
               <span className="text-[#bec8d2]">
@@ -605,7 +1021,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               <span className="text-[#bec8d2]">
                 fyd = <span className="text-[#ffb95f] font-semibold">{calcResults.allowableStress_fyd.toFixed(1)} MPa</span>
               </span>
-              <span className="bg-[#c084fc]/15 text-[#c084fc] px-2 py-0.5 rounded border border-[#c084fc]/30 font-semibold">
+              <span className={`px-2 py-0.5 rounded border font-semibold ${
+                isVonMisesFailed
+                  ? 'bg-red-950 text-red-300 border-red-500/60'
+                  : 'bg-[#c084fc]/15 text-[#c084fc] border-[#c084fc]/30'
+              }`}>
                 σ_VM,máx = {calcResults.vonMisesMax.toFixed(1)} MPa @ x={calcResults.vonMisesMaxX.toFixed(2)}m
               </span>
             </div>
@@ -717,22 +1137,53 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         </div>
 
         {/* Card: Detalhamento de Tensões e Von Mises */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded p-4 flex flex-col justify-between">
+        <div className={`rounded p-4 flex flex-col justify-between transition-all duration-300 relative overflow-hidden ${
+          isVonMisesFailed
+            ? 'bg-gradient-to-b from-[#3a0e16] via-[#260e14] to-[#181c24] border-2 border-red-500 shadow-2xl shadow-red-950/90 ring-4 ring-red-500/50 scale-[1.01] z-10'
+            : anyFailed
+            ? 'bg-[#181c24] border border-[#3e4850] opacity-85 hover:opacity-100'
+            : 'bg-[#181c24] border border-[#3e4850]'
+        }`}>
+          {isVonMisesFailed && (
+            <>
+              {/* Evidence Top Ribbon */}
+              <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 text-white font-mono text-[10px] font-black uppercase px-3 py-1.5 tracking-wider flex items-center justify-between -mx-4 -mt-4 mb-3 shadow-md border-b border-red-400/40">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                  <span className="material-symbols-outlined text-xs">report</span>
+                  QUADRO EM EVIDÊNCIA • REPROVADO
+                </span>
+                <span className="text-[9px] bg-red-950 px-1.5 py-0.5 rounded border border-red-400/40 font-bold">
+                  ENERGIA DE DISTORÇÃO
+                </span>
+              </div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/25 rounded-full blur-2xl pointer-events-none animate-pulse"></div>
+            </>
+          )}
           <div className="flex items-center justify-between pb-2 border-b border-[#3e4850]/60 mb-3">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#c084fc] text-xl">speed</span>
-              <span className="font-headline font-semibold text-[#dfe2ee]">
+              <span className={`material-symbols-outlined text-xl ${isVonMisesFailed ? 'text-red-400 animate-pulse' : 'text-[#c084fc]'}`}>speed</span>
+              <span className={`font-headline font-semibold ${isVonMisesFailed ? 'text-red-200 font-bold' : 'text-[#dfe2ee]'}`}>
                 Critério de Von Mises
               </span>
             </div>
-            <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border ${
+            <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold border transition-all ${
               !hasLoads
                 ? 'bg-[#262a33] text-[#88929b] border-[#3e4850]'
                 : calcResults.vonMisesRatio <= 100
                 ? 'bg-[#00b17b]/15 text-[#4edea3] border-[#00b17b]/30'
-                : 'bg-[#93000a]/20 text-[#ffb4ab] border-[#93000a]'
+                : 'bg-red-950 text-red-100 border-red-500 shadow-sm animate-pulse flex items-center gap-1 font-black'
             }`}>
-              {!hasLoads ? '—' : calcResults.vonMisesRatio <= 100 ? 'CONFORME' : 'NÃO CONFORME'}
+              {!hasLoads ? (
+                '—'
+              ) : calcResults.vonMisesRatio <= 100 ? (
+                'CONFORME'
+              ) : (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span>
+                  NÃO CONFORME
+                </>
+              )}
             </span>
           </div>
 
@@ -745,9 +1196,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               <span className="text-[#bec8d2] text-[11px]">Tensão Cisalhante Máx (τ):</span>
               <span className="text-[#4edea3] font-bold">{calcResults.shearStressMax.toFixed(1)} MPa</span>
             </div>
-            <div className="bg-[#1c2028] p-2 rounded border border-[#3e4850]/40 flex justify-between items-center">
-              <span className="text-[#bec8d2] text-[11px]">Tensão Equiv. Von Mises (σ_VM):</span>
-              <span className="text-[#c084fc] font-bold text-sm">{calcResults.vonMisesMax.toFixed(1)} MPa</span>
+            <div className={`p-2 rounded border flex justify-between items-center ${
+              isVonMisesFailed ? 'bg-red-950/70 border-red-500/70' : 'bg-[#1c2028] border-[#3e4850]/40'
+            }`}>
+              <span className={`text-[11px] ${isVonMisesFailed ? 'text-red-200 font-bold' : 'text-[#bec8d2]'}`}>Tensão Equiv. Von Mises (σ_VM):</span>
+              <span className={`font-black text-sm ${isVonMisesFailed ? 'text-red-400' : 'text-[#c084fc]'}`}>{calcResults.vonMisesMax.toFixed(1)} MPa</span>
             </div>
             <div className="bg-[#1c2028] p-2 rounded border border-[#3e4850]/40 flex justify-between items-center">
               <span className="text-[#bec8d2] text-[11px]">Tensão Admissível (fyd):</span>
@@ -755,9 +1208,26 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             </div>
           </div>
 
+          {isVonMisesFailed && (
+            <div className="mt-3 bg-red-950/95 border-2 border-red-500/80 rounded-md p-2.5 text-[11px] font-mono text-red-100 shadow-md">
+              <div className="font-extrabold text-red-300 flex items-center gap-1.5 pb-1 border-b border-red-500/40 uppercase tracking-wide text-[10px]">
+                <span className="material-symbols-outlined text-xs text-red-400 animate-pulse">warning</span>
+                POR QUE A VIGA ESTÁ REPROVADA?
+              </div>
+              <div className="mt-1 space-y-0.5 text-[10px] leading-snug">
+                <p>
+                  A tensão equivalente combinada (σ_VM = {calcResults.vonMisesMax.toFixed(1)} MPa) superou a tensão de escoamento de projeto (fyd = {calcResults.allowableStress_fyd.toFixed(1)} MPa) em +{(calcResults.vonMisesRatio - 100).toFixed(1)}%. Ocorrerá escoamento e plastificação das fibras sob a combinação de flexão e cisalhamento.
+                </p>
+                <p className="text-[9px] text-amber-300 font-semibold mt-1">
+                  💡 Solução: Adotar perfil mais robusto ou utilizar o Motor IA para otimização automática.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="mt-3 pt-2 border-t border-[#3e4850]/60 flex items-center justify-between font-mono text-[10px]">
             <span className="text-[#88929b]">Fórmula: σ_VM = √(σ² + 3τ²)</span>
-            <span className="text-[#c084fc] font-semibold">
+            <span className={`font-semibold ${isVonMisesFailed ? 'text-red-400 font-bold' : 'text-[#c084fc]'}`}>
               CS = {calcResults.vonMisesMax > 0 ? (calcResults.allowableStress_fyd / calcResults.vonMisesMax).toFixed(2) : '∞'}x
             </span>
           </div>
