@@ -59,7 +59,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent(
-      `*Memorial de Cálculo Estrutural - Beam Engineering*\nProjeto: ${projectName}\nViga V-104 (L = ${spanLength}m)\nPerfil: ${profile.designation} (${steelGrade.name})\nStatus: ${
+      `*Memorial de Cálculo Estrutural - Beam Engineering*\nProjeto: ${projectName}\nViga (L = ${spanLength}m)\nPerfil: ${profile.designation} (${steelGrade.name})\nStatus: ${
         !hasLoads
           ? 'AGUARDANDO CARGAS'
           : calcResults.status === 'PASS'
@@ -83,12 +83,12 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
 
   // Support description
   const supportDesc =
-    supportType === 'CANTILEVER'
+    supportType === 'cantilever'
       ? 'Engastada e Livre (Balanço)'
-      : supportType === 'FIXED_FIXED'
+      : supportType === 'biengastada'
       ? 'Bi-engastada (Engaste Perfeito)'
-      : supportType === 'PROPPED_CANTILEVER'
-      ? 'Engastada e Apoiada'
+      : supportType === 'continua'
+      ? 'Contínua (apoios A, C e B)'
       : 'Biapoiada (Apoio de 1º e 2º Gênero)';
 
   // SVG Diagram Coordinates for DEC and DMF
@@ -430,6 +430,30 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                         {hasLoads ? `${calcResults.reactionB.toFixed(2)} kN` : '—'}
                       </td>
                     </tr>
+                    {calcResults.reactionC !== undefined && (
+                      <tr>
+                        <td className="py-1 px-2 text-slate-600">Reação de Apoio Intermediário C (RC):</td>
+                        <td className="py-1 px-2 text-right font-bold text-slate-900">
+                          {hasLoads ? `${calcResults.reactionC.toFixed(2)} kN` : '—'}
+                        </td>
+                      </tr>
+                    )}
+                    {calcResults.fixedEndMomentA !== undefined && (
+                      <tr>
+                        <td className="py-1 px-2 text-slate-600">Momento no engaste A (M_A):</td>
+                        <td className="py-1 px-2 text-right font-bold text-slate-900">
+                          {hasLoads ? `${calcResults.fixedEndMomentA.toFixed(2)} kN·m` : '—'}
+                        </td>
+                      </tr>
+                    )}
+                    {calcResults.fixedEndMomentB !== undefined && (
+                      <tr>
+                        <td className="py-1 px-2 text-slate-600">Momento no engaste B (M_B):</td>
+                        <td className="py-1 px-2 text-right font-bold text-slate-900">
+                          {hasLoads ? `${calcResults.fixedEndMomentB.toFixed(2)} kN·m` : '—'}
+                        </td>
+                      </tr>
+                    )}
                     <tr className="bg-sky-50/50">
                       <td className="py-1 px-2 text-sky-900 font-semibold">Momento Fletor Solicitante Máx (MSd):</td>
                       <td className="py-1 px-2 text-right font-bold text-sky-900">

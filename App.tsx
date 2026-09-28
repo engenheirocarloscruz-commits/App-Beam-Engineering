@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { TopAppBar } from './components/TopAppBar';
 import { BottomNavBar, TabKey } from './components/BottomNavBar';
 import { ProjectsView } from './components/ProjectsView';
@@ -9,6 +9,8 @@ import { CalculationReportView } from './components/CalculationReportView';
 import { DEFAULT_PROFILE, STEEL_GRADES, STEEL_PROFILES } from './data/profiles';
 import { LoadItem, NormCode, ProjectData, SteelGrade, SteelProfile, SupportPositions, SupportType } from './types';
 import { solveBeam } from './utils/structuralSolver';
+import { runSelfTest } from './utils/selfTest';
+import { verifyCatalogIntegrity, IntegrityState } from './utils/integrity';
 
 export function App() {
   // Navigation & View state
@@ -42,6 +44,22 @@ export function App() {
   const calcResults = useMemo(() => {
     return solveBeam(spanLength, supportType, loads, selectedProfile, selectedSteelGrade, supportPositions);
   }, [spanLength, supportType, loads, selectedProfile, selectedSteelGrade, supportPositions]);
+
+  // Integridade do motor: autoteste (known-answer, síncrono) + hash SHA-256 do catálogo (assíncrono).
+  // Falha em qualquer um bloqueia TODOS os resultados (fail-closed).
+  const selfTest = useMemo(() => runSelfTest(), []);
+  const [catalogState, setCatalogState] = useState<IntegrityState>('checking');
+  useEffect(() => {
+    let alive = true;
+    verifyCatalogIntegrity().then((r) => {
+      if (alive) setCatalogState(r.state);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  const engineBlocked = !selfTest.ok || catalogState === 'failed';
+  const invalid = calcResults.status === 'INVALID';
 
   // Span update handler keeping support B in sync if it was at the beam end
   const handleUpdateSpan = (newSpan: number) => {
@@ -104,9 +122,33 @@ export function App() {
     return undefined;
   };
 
+  if (engineBlocked) {
+    return (
+      <div role="alert" className="min-h-screen bg-[#0f131c] text-[#dfe2ee] flex items-center justify-center p-6">
+        <div className="max-w-xl rounded-xl border border-red-500/60 bg-red-950/40 p-6">
+          <h1 className="text-lg font-bold text-red-200">Verificação de integridade falhou — cálculo bloqueado</h1>
+          <p className="mt-2 text-sm text-red-100/90">
+            O motor de cálculo ou o catálogo de perfis/aços não corresponde ao esperado. Nenhum resultado ou memorial será
+            emitido. Recarregue a página; se persistir, reinstale a versão oficial do aplicativo.
+          </p>
+          {!selfTest.ok && (
+            <ul className="mt-3 list-disc pl-5 text-xs text-red-100/80">
+              {selfTest.failures.slice(0, 6).map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+          )}
+          {catalogState === 'failed' && (
+            <p className="mt-3 text-xs text-red-100/80">Catálogo de perfis/aços alterado em relação ao manifesto de integridade.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0f131c] text-[#dfe2ee] flex flex-col font-sans selection:bg-[#0ea5e9]/30 selection:text-[#89ceff]">
-      {showReportView ? (
+      {showReportView && !invalid ? (
         <CalculationReportView
           calcResults={calcResults}
           profile={selectedProfile}
@@ -130,6 +172,28 @@ export function App() {
           />
 
           <main className="flex-1 flex flex-col pb-20 overflow-y-auto">
+            {invalid && (
+              <div role="alert" className="mx-4 mt-3 rounded-lg border border-red-500/60 bg-red-950/40 p-3 text-sm text-red-100">
+                <b>Entradas inválidas — cálculo bloqueado.</b> Resultados e memorial só são liberados após corrigir:
+                <ul className="mt-1 list-disc pl-5 text-xs">
+                  {(calcResults.errors ?? []).map((e) => (
+                    <li key={e}>{e}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {!invalid && (calcResults.warnings?.length ?? 0) > 0 && (
+              <div className="mx-4 mt-3 rounded-lg border border-amber-500/50 bg-amber-950/30 p-2 text-xs text-amber-100">
+                {calcResults.warnings!.map((w) => (
+                  <div key={w}>{w}</div>
+                ))}
+              </div>
+            )}
+            {catalogState === 'unavailable' && (
+              <div className="mx-4 mt-3 rounded-lg border border-amber-500/50 bg-amber-950/30 p-2 text-xs text-amber-100">
+                Verificação de integridade do catálogo indisponível neste contexto (requer HTTPS ou localhost).
+              </div>
+            )}
             {activeTab === 'projetos' && (
               <ProjectsView
                 currentSpan={spanLength}
@@ -147,7 +211,7 @@ export function App() {
                 onChangeCompanyName={setCompanyName}
                 onChangeStudyDate={setStudyDate}
                 onSelectSupportType={(type) => setSupportType(type)}
-                onUpdateSpan={(val) => setSpanLength(val)}
+                onUpdateSpan={handleUpdateSpan}
                 onSelectNorm={(n) => setNorm(n)}
                 onSelectProfile={(p) => setSelectedProfile(p)}
                 onStartCalculation={() => setActiveTab('carregamento')}
@@ -184,7 +248,7 @@ export function App() {
               />
             )}
 
-            {activeTab === 'resultados' && (
+            {activeTab === 'resultados' && !invalid && (
               <ResultsView
                 calcResults={calcResults}
                 profile={selectedProfile}

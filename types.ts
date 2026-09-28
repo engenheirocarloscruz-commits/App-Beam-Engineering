@@ -88,7 +88,12 @@ export interface CalculationResults {
   vonMisesMaxX: number; // m
   allowableStress_fyd: number; // MPa (tensão admissível de escoamento f_yd = fy / γ_a1)
   vonMisesRatio: number; // % (taxa de utilização de Von Mises σ_VM / f_yd * 100)
-  status: 'PASS' | 'ALERT' | 'FAIL' | 'NONE';
+  status: 'PASS' | 'ALERT' | 'FAIL' | 'NONE' | 'INVALID'; // INVALID = entrada inválida/falha de integridade (fail-closed)
+  errors?: string[]; // motivos de INVALID
+  warnings?: string[]; // avisos não bloqueantes
+  engineVersion?: string;
+  fixedEndMomentA?: number; // kNm (momento interno na seção do engaste A; negativo = tração em cima)
+  fixedEndMomentB?: number; // kNm
   shearCurve: { x: number; v: number }[];
   momentCurve: { x: number; m: number }[];
   deflectionCurve: { x: number; d: number }[];

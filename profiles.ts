@@ -232,3 +232,14 @@ export const STEEL_PROFILES: SteelProfile[] = [
 ];
 
 export const DEFAULT_PROFILE: SteelProfile = STEEL_PROFILES[0];
+
+// Imutabilidade em tempo de execução: qualquer tentativa de alterar o catálogo lança erro em modo estrito.
+function deepFreeze<T>(o: T): T {
+  if (o && typeof o === 'object') {
+    Object.values(o as object).forEach(deepFreeze);
+    Object.freeze(o);
+  }
+  return o;
+}
+deepFreeze(STEEL_GRADES);
+deepFreeze(STEEL_PROFILES);

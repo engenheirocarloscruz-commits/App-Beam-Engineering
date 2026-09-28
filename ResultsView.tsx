@@ -346,7 +346,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             <span className="font-mono text-xs text-[#bec8d2] font-medium">Reações nos Apoios</span>
             <span className="material-symbols-outlined text-[#88929b] text-base">balance</span>
           </div>
-          <div className="grid grid-cols-2 gap-2 my-1">
+          <div className={`grid ${calcResults.reactionC !== undefined ? 'grid-cols-3' : 'grid-cols-2'} gap-2 my-1`}>
             <div className="bg-[#1c2028] p-2 rounded border border-[#3e4850]/50">
               <span className="font-mono text-[10px] text-[#bec8d2] block">Apoio A (Esq)</span>
               <div className="font-mono text-base font-bold text-[#89ceff]">
@@ -361,10 +361,19 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               </div>
               <span className="font-mono text-[9px] text-[#4edea3]">↑ Vertical</span>
             </div>
+            {calcResults.reactionC !== undefined && (
+              <div className="bg-[#1c2028] p-2 rounded border border-[#3e4850]/50">
+                <span className="font-mono text-[10px] text-[#bec8d2] block">Apoio C (Central)</span>
+                <div className="font-mono text-base font-bold text-[#89ceff]">
+                  {calcResults.reactionC.toFixed(1)} <span className="text-[10px] font-normal text-[#bec8d2]">kN</span>
+                </div>
+                <span className="font-mono text-[9px] text-[#4edea3]">↑ Vertical</span>
+              </div>
+            )}
           </div>
           <div className="pt-1.5 border-t border-[#3e4850]/60 flex justify-between font-mono text-[10px] text-[#bec8d2]">
             <span>ΣFy = {calcResults.totalVerticalLoad.toFixed(1)} kN</span>
-            <span>Equilíbrio: 0.0 kN</span>
+            <span>Equilíbrio: {(calcResults.reactionA + calcResults.reactionB + (calcResults.reactionC ?? 0) - calcResults.totalVerticalLoad).toFixed(1)} kN</span>
           </div>
         </div>
       </section>
