@@ -9,7 +9,7 @@ interface ResultsViewProps {
   norm: string;
   loads?: LoadItem[];
   onOpenMemorial: () => void;
-  onOptimizeProfile: () => void;
+  onOptimizeProfile?: () => void;
   onGoToLoads?: () => void;
 }
 
@@ -21,7 +21,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   norm,
   loads,
   onOpenMemorial,
-  onOptimizeProfile,
   onGoToLoads,
 }) => {
   const hasLoads =
@@ -744,7 +743,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             <span className="font-mono text-xs text-[#bec8d2] font-semibold uppercase tracking-wider block mb-1">
               Ações de Engenharia
             </span>
-            <p className="text-xs text-[#88929b]">Gere o documento final auditável ou otimize o consumo de aço.</p>
+            <p className="text-xs text-[#88929b]">Gere o documento final auditável e memorial de cálculo em PDF.</p>
           </div>
 
           <div className="space-y-2">
@@ -755,14 +754,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
             >
               <span className="material-symbols-outlined text-xl">picture_as_pdf</span>
               <span>Exportar Memorial de Cálculo PDF</span>
-            </button>
-            <button
-              type="button"
-              onClick={onOptimizeProfile}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded bg-[#262a33] hover:bg-[#31353e] text-[#dfe2ee] border border-[#3e4850] font-mono text-xs transition-colors active:scale-[0.98]"
-            >
-              <span className="material-symbols-outlined text-[#89ceff] text-lg">auto_fix_high</span>
-              <span>Otimizar Perfil (Economia de Aço)</span>
             </button>
           </div>
         </div>

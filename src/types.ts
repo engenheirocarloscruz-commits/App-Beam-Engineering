@@ -6,7 +6,7 @@ export type SupportType = 'biapoiada' | 'cantilever' | 'biengastada' | 'continua
 
 export type NormCode = 'NBR 8800:2008' | 'AISC 360-16';
 
-export type ProfileFamily = 'W' | 'I' | 'U' | 'HSS';
+export type ProfileFamily = 'W' | 'I' | 'U' | 'HSS' | 'L' | 'TUB_CIRC' | 'TUB_RET' | 'TUB_QUAD';
 
 export interface SteelGrade {
   name: string;

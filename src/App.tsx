@@ -14,8 +14,15 @@ import { verifyCatalogIntegrity, IntegrityState } from './utils/integrity';
 
 export function App() {
   // Navigation & View state
-  const [activeTab, setActiveTab] = useState<TabKey>('carregamento');
+  const [activeTab, setActiveTab] = useState<TabKey>('projetos');
   const [showReportView, setShowReportView] = useState<boolean>(false);
+
+  // Progressive Tab Unlock workflow: starts with only 'projetos'
+  const [unlockedTabs, setUnlockedTabs] = useState<TabKey[]>(['projetos']);
+
+  const unlockTab = (tab: TabKey) => {
+    setUnlockedTabs((prev) => (prev.includes(tab) ? prev : [...prev, tab]));
+  };
 
   // Structural parameters
   const [spanLength, setSpanLength] = useState<number>(6.0);
@@ -25,11 +32,11 @@ export function App() {
     posB: 6.0,
   });
   const [norm, setNorm] = useState<NormCode>('NBR 8800:2008');
-  const [projectName, setProjectName] = useState<string>('Viga Cobertura Galpão B');
-  const [professionalId, setProfessionalId] = useState<string>('CREA/SP: 5069812-4 / D');
-  const [engineerName, setEngineerName] = useState<string>('Eng. Carlos Cruz');
-  const [companyName, setCompanyName] = useState<string>('Cruz Engenharia Estrutural');
-  const [studyDate, setStudyDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [projectName, setProjectName] = useState<string>('');
+  const [professionalId, setProfessionalId] = useState<string>('');
+  const [engineerName, setEngineerName] = useState<string>('');
+  const [companyName, setCompanyName] = useState<string>('');
+  const [studyDate, setStudyDate] = useState<string>('');
 
   // Materials & Profile
   const [selectedProfile, setSelectedProfile] = useState<SteelProfile>(DEFAULT_PROFILE);
@@ -102,6 +109,7 @@ export function App() {
     if (matchedProfile) {
       setSelectedProfile(matchedProfile);
     }
+    unlockTab('carregamento');
     setActiveTab('carregamento');
   };
 
@@ -167,7 +175,7 @@ export function App() {
       ) : (
         <>
           <TopAppBar
-            title="Beam Engineering"
+            title="BeamSolidPro"
             subtitle={getSubTitle()}
           />
 
@@ -214,8 +222,13 @@ export function App() {
                 onUpdateSpan={handleUpdateSpan}
                 onSelectNorm={(n) => setNorm(n)}
                 onSelectProfile={(p) => setSelectedProfile(p)}
-                onStartCalculation={() => setActiveTab('carregamento')}
-                onOpenProfileCatalog={() => setActiveTab('perfis')}
+                onStartCalculation={() => {
+                  unlockTab('carregamento');
+                  setActiveTab('carregamento');
+                }}
+                onOpenProfileCatalog={() => {
+                  if (unlockedTabs.includes('perfis')) setActiveTab('perfis');
+                }}
                 onOpenMemorial={(id) => handleOpenMemorial(id)}
                 onLoadProject={handleLoadProject}
               />
@@ -234,7 +247,10 @@ export function App() {
                 onAddLoad={handleAddLoad}
                 onRemoveLoad={handleRemoveLoad}
                 onUpdateLoad={handleUpdateLoad}
-                onAdvanceToProfiles={() => setActiveTab('perfis')}
+                onAdvanceToProfiles={() => {
+                  unlockTab('perfis');
+                  setActiveTab('perfis');
+                }}
               />
             )}
 
@@ -244,7 +260,10 @@ export function App() {
                 selectedSteelGrade={selectedSteelGrade}
                 onSelectProfile={(p) => setSelectedProfile(p)}
                 onSelectSteelGrade={(g) => setSelectedSteelGrade(g)}
-                onConfirmCalculate={() => setActiveTab('resultados')}
+                onConfirmCalculate={() => {
+                  unlockTab('resultados');
+                  setActiveTab('resultados');
+                }}
               />
             )}
 
@@ -265,8 +284,11 @@ export function App() {
 
           <BottomNavBar
             activeTab={activeTab}
+            unlockedTabs={unlockedTabs}
             onTabChange={(tab) => {
-              setActiveTab(tab);
+              if (unlockedTabs.includes(tab)) {
+                setActiveTab(tab);
+              }
             }}
           />
         </>

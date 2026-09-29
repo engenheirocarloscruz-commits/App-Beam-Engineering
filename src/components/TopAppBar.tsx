@@ -8,7 +8,7 @@ interface TopAppBarProps {
 }
 
 export const TopAppBar: React.FC<TopAppBarProps> = ({
-  title = 'Beam Engineering',
+  title = 'BeamSolidPro',
   subtitle,
   showBack = false,
   onBack,

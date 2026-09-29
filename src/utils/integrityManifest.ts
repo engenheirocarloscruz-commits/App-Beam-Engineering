@@ -1,2 +1,2 @@
 // Gerado por scripts/update-integrity.ts — NÃO editar à mão.
-export const EXPECTED_CATALOG_SHA256 = '246797914319064db774cfcccaa4f7df0daa0d5f75162739c6ec038e4b332c76';
+export const EXPECTED_CATALOG_SHA256 = 'a2fe6f63a6cd411d15650bc399beae84e13d7b20e8b940045c18e0d4df862ca5';

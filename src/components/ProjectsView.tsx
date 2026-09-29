@@ -35,11 +35,11 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
   onStartCalculation,
   onOpenProfileCatalog,
   onSelectProfile,
-  projectName = 'Viga Cobertura Galpão B',
-  professionalId = 'CREA/SP: 5069812-4 / D',
-  engineerName = 'Eng. Carlos Cruz',
-  companyName = 'Cruz Engenharia Estrutural',
-  studyDate,
+  projectName = '',
+  professionalId = '',
+  engineerName = '',
+  companyName = '',
+  studyDate = '',
   onChangeProjectName,
   onChangeProfessionalId,
   onChangeEngineerName,
@@ -50,9 +50,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
   const [localProfessionalId, setLocalProfessionalId] = React.useState(professionalId);
   const [localEngineer, setLocalEngineer] = React.useState(engineerName);
   const [localCompany, setLocalCompany] = React.useState(companyName);
-  const [localDate, setLocalDate] = React.useState(
-    studyDate || new Date().toISOString().split('T')[0]
-  );
+  const [localDate, setLocalDate] = React.useState(studyDate);
 
   React.useEffect(() => {
     if (projectName !== undefined) setLocalProjectName(projectName);

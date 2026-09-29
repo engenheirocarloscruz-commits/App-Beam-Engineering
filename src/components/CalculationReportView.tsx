@@ -25,11 +25,11 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
   norm,
   loads = [],
   supportType = 'SIMPLY_SUPPORTED',
-  projectName = 'Edifício Residencial Alpha - Cobertura Galpão B',
-  professionalId = 'CREA/SP: 5069812-4 / D',
-  engineerName = 'Eng. Carlos Cruz',
-  companyName = 'Cruz Engenharia Estrutural',
-  studyDate = '2026-09-23',
+  projectName = '',
+  professionalId = '',
+  engineerName = '',
+  companyName = '',
+  studyDate = '',
   onBack,
 }) => {
   const [zoomLevel, setZoomLevel] = useState<number>(100);
@@ -259,7 +259,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                 <span className="inline-block px-2 py-0.5 rounded bg-slate-100 border border-slate-300 text-xs font-bold text-slate-800">
                   DOCUMENTO: MEM-STR-0104
                 </span>
-                <div className="text-[11px] text-slate-600 mt-1">Data: {studyDate} • REV 01</div>
+                <div className="text-[11px] text-slate-600 mt-1">Data: {studyDate || '—'} • REV 01</div>
                 <div className="text-[10px] text-slate-500 font-semibold">Norma: {norm}</div>
               </div>
             </div>
@@ -268,16 +268,18 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
             <div className="mt-4 pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 font-mono text-xs text-slate-700 bg-slate-50 p-3 rounded border border-slate-200">
               <div>
                 <span className="text-slate-500 block text-[10px] uppercase font-semibold">Projeto / Obra:</span>
-                <span className="font-semibold text-slate-900">{projectName}</span>
+                <span className="font-semibold text-slate-900">{projectName || '—'}</span>
               </div>
               <div>
                 <span className="text-slate-500 block text-[10px] uppercase font-semibold">Empresa / Contratada:</span>
-                <span className="font-semibold text-slate-900">{companyName}</span>
+                <span className="font-semibold text-slate-900">{companyName || '—'}</span>
               </div>
               <div>
                 <span className="text-slate-500 block text-[10px] uppercase font-semibold">Responsável Técnico:</span>
-                <span className="font-semibold text-slate-900">{engineerName}</span>
-                <span className="text-slate-600 block text-[10px]">{professionalId}</span>
+                <span className="font-semibold text-slate-900">{engineerName || '—'}</span>
+                {professionalId ? (
+                  <span className="text-slate-600 block text-[10px]">{professionalId}</span>
+                ) : null}
               </div>
             </div>
           </header>
