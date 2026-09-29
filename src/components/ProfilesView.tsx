@@ -811,7 +811,7 @@ export const ProfilesView: React.FC<ProfilesViewProps> = ({
                   Classe da Seção: <strong className="text-[#4edea3] font-mono">Compacta (Mesa e Alma)</strong>
                 </span>
               </div>
-              <span className="font-mono text-[10px] text-[#88929b]">λ &lt; λp (NBR 8800)</span>
+              <span className="font-mono text-[10px] text-[#88929b]">λ &lt; λp (Seção Compacta)</span>
             </div>
           </div>
         </div>

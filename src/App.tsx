@@ -17,8 +17,13 @@ export function App() {
   const [activeTab, setActiveTab] = useState<TabKey>('projetos');
   const [showReportView, setShowReportView] = useState<boolean>(false);
 
-  // Progressive Tab Unlock workflow: starts with only 'projetos'
-  const [unlockedTabs, setUnlockedTabs] = useState<TabKey[]>(['projetos']);
+  // View and navigation state (all tabs unlocked)
+  const [unlockedTabs, setUnlockedTabs] = useState<TabKey[]>([
+    'projetos',
+    'carregamento',
+    'perfis',
+    'resultados',
+  ]);
 
   const unlockTab = (tab: TabKey) => {
     setUnlockedTabs((prev) => (prev.includes(tab) ? prev : [...prev, tab]));
@@ -227,7 +232,7 @@ export function App() {
                   setActiveTab('carregamento');
                 }}
                 onOpenProfileCatalog={() => {
-                  if (unlockedTabs.includes('perfis')) setActiveTab('perfis');
+                  setActiveTab('perfis');
                 }}
                 onOpenMemorial={(id) => handleOpenMemorial(id)}
                 onLoadProject={handleLoadProject}
@@ -286,9 +291,7 @@ export function App() {
             activeTab={activeTab}
             unlockedTabs={unlockedTabs}
             onTabChange={(tab) => {
-              if (unlockedTabs.includes(tab)) {
-                setActiveTab(tab);
-              }
+              setActiveTab(tab);
             }}
           />
         </>

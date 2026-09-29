@@ -175,7 +175,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
               </h1>
             </div>
             <p className="font-mono text-[11px] text-[#88929b]">
-              Folha em Branco Normatizada • {norm}
+              Folha em Branco • Memorial de Cálculo Estrutural
             </p>
           </div>
         </div>
@@ -247,7 +247,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                 </div>
                 <div>
                   <h1 className="font-bold text-xl text-slate-900 tracking-tight leading-tight">
-                    Beam Engineering
+                    BeamSolidPro
                   </h1>
                   <span className="font-mono text-[11px] text-slate-600 block tracking-wider uppercase font-semibold">
                     Engenharia Estrutural • Memorial de Cálculo e Verificação
@@ -260,7 +260,6 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                   DOCUMENTO: MEM-STR-0104
                 </span>
                 <div className="text-[11px] text-slate-600 mt-1">Data: {studyDate || '—'} • REV 01</div>
-                <div className="text-[10px] text-slate-500 font-semibold">Norma: {norm}</div>
               </div>
             </div>
 
@@ -537,12 +536,12 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
             </div>
           </section>
 
-          {/* 3.0 VERIFICAÇÕES NORMATIVAS DETALHADAS */}
+          {/* 3.0 VERIFICAÇÕES ESTRUTURAIS DETALHADAS */}
           <section className="mb-5">
             <div className="flex items-center space-x-2 border-b border-slate-200 pb-1 mb-2.5">
               <span className="font-mono text-xs font-bold px-1.5 py-0.5 bg-slate-900 text-white rounded">3.0</span>
               <h2 className="font-bold text-slate-900 uppercase tracking-wide text-xs">
-                Verificações aos Estados Limites Últimos (ELU) e de Serviço (ELS) Conforme {norm}
+                Verificações aos Estados Limites Últimos (ELU) e de Serviço (ELS)
               </h2>
             </div>
 
@@ -568,7 +567,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                 </p>
                 <div className="bg-white p-2.5 rounded border border-slate-200 text-[11px] space-y-1">
                   <div className="text-slate-700 font-medium">
-                    Fórmula Normativa: <b>MRd = (Zx · fy) / γa1</b> = ({profile.plasticModulus_Zx} cm³ · {(steelGrade.fy / 10).toFixed(1)} kN/cm²) / 1.10
+                    Fórmula de Verificação: <b>MRd = (Zx · fy) / γa1</b> = ({profile.plasticModulus_Zx} cm³ · {(steelGrade.fy / 10).toFixed(1)} kN/cm²) / 1.10
                   </div>
                   <div className="flex justify-between items-center text-slate-900 font-bold pt-1 border-t border-slate-100">
                     <span>MRd = {mrd_val.toFixed(2)} kN·m</span>
@@ -601,7 +600,7 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                 </p>
                 <div className="bg-white p-2.5 rounded border border-slate-200 text-[11px] space-y-1">
                   <div className="text-slate-700 font-medium">
-                    Fórmula Normativa: <b>VRd = 0.60 · Aw · fy / γa1</b> = 0.60 · {Aw_cm2.toFixed(2)} cm² · {(steelGrade.fy / 10).toFixed(1)} kN/cm² / 1.10
+                    Fórmula de Verificação: <b>VRd = 0.60 · Aw · fy / γa1</b> = 0.60 · {Aw_cm2.toFixed(2)} cm² · {(steelGrade.fy / 10).toFixed(1)} kN/cm² / 1.10
                   </div>
                   <div className="flex justify-between items-center text-slate-900 font-bold pt-1 border-t border-slate-100">
                     <span>VRd = {vrd_val.toFixed(2)} kN</span>
@@ -724,12 +723,12 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
                   </h3>
                   <p className="text-xs mt-0.5 leading-relaxed font-sans">
                     {!hasLoads
-                      ? `Não constam ações ou cargas solicitantes aplicadas ao modelo estrutural. Insira as cargas na aba de Carregamento para conclusão do dimensionamento segundo a norma ${norm}.`
+                      ? `Não constam ações ou cargas solicitantes aplicadas ao modelo estrutural. Insira as cargas na aba de Carregamento para conclusão do dimensionamento.`
                       : calcResults.status === 'PASS'
-                      ? `A viga biapoiada de vão L = ${spanLength.toFixed(2)} m constituída pelo perfil Gerdau ${profile.designation} em aço ${steelGrade.name} atende rigorosamente a todos os critérios de dimensionamento para os Estados Limites Últimos (ELU) e de Serviço (ELS) preconizados pela norma ${norm}.`
+                      ? `A viga biapoiada de vão L = ${spanLength.toFixed(2)} m constituída pelo perfil ${profile.designation} em aço ${steelGrade.name} atende rigorosamente a todos os critérios de dimensionamento para os Estados Limites Últimos (ELU) e de Serviço (ELS).`
                       : calcResults.status === 'ALERT'
-                      ? `A viga atende aos limites normativos, porém apresenta taxa de utilização elevada (> 85%). Recomenda-se acompanhamento ou adoção de contra-flecha.`
-                      : `A seção adotada viola os limites prescritos pela norma ${norm}. Necessário aumentar a altura ou módulo resistente da viga.`}
+                      ? `A viga atende aos limites admissíveis, porém apresenta taxa de utilização elevada (> 85%). Recomenda-se acompanhamento ou adoção de contra-flecha.`
+                      : `A seção adotada excede os limites de dimensionamento estrutural admissíveis. Necessário aumentar a altura ou módulo resistente da viga.`}
                   </p>
                 </div>
               </div>
@@ -771,8 +770,8 @@ export const CalculationReportView: React.FC<CalculationReportViewProps> = ({
 
             {/* Rodapé da Folha Impressa */}
             <footer className="mt-4 pt-2 border-t border-slate-300 flex justify-between items-center text-[10px] font-mono text-slate-500">
-              <span>Beam Engineering • Sistema de Dimensionamento Estrutural</span>
-              <span>Página 1 de 1 • Memorial A4 Normatizado</span>
+              <span>BeamSolidPro • Sistema de Dimensionamento Estrutural</span>
+              <span>Página 1 de 1 • Memorial de Cálculo A4</span>
               <span>Emitido em: {studyDate}</span>
             </footer>
           </section>

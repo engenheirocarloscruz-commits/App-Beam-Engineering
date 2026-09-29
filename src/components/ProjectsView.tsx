@@ -4,11 +4,11 @@ import { NormCode, ProjectData, SteelProfile, SupportType } from '../types';
 interface ProjectsViewProps {
   currentSpan?: number;
   currentSupportType: SupportType;
-  currentNorm: NormCode;
+  currentNorm?: NormCode;
   selectedProfile?: SteelProfile;
   onSelectSupportType: (type: SupportType) => void;
   onUpdateSpan?: (span: number) => void;
-  onSelectNorm: (norm: NormCode) => void;
+  onSelectNorm?: (norm: NormCode) => void;
   onStartCalculation: () => void;
   onOpenProfileCatalog: () => void;
   onSelectProfile?: (profile: SteelProfile) => void;
@@ -28,10 +28,8 @@ interface ProjectsViewProps {
 
 export const ProjectsView: React.FC<ProjectsViewProps> = ({
   currentSupportType,
-  currentNorm,
   selectedProfile,
   onSelectSupportType,
-  onSelectNorm,
   onStartCalculation,
   onOpenProfileCatalog,
   onSelectProfile,
@@ -121,11 +119,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
                 <div className="font-mono text-sm text-[#4edea3] font-bold">
                   ESTÁTICO <span className="text-[10px] text-[#4edea3]">ATIVO</span>
                 </div>
-              </div>
-              <div className="h-6 w-[1px] bg-[#3e4850]"></div>
-              <div>
-                <div className="font-mono text-[10px] text-[#88929b]">NORMAS</div>
-                <div className="font-mono text-sm text-[#89ceff] font-bold">NBR / AISC</div>
               </div>
             </div>
           </div>
@@ -297,44 +290,13 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
           </div>
         </div>
 
-        {/* Formulation & Parameters Bar */}
-        <div className="bg-[#181c24] border border-[#3e4850] rounded-lg p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mt-2">
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Standard Norm Selector */}
-            <div className="flex flex-col gap-1">
-              <label className="font-mono text-[10px] text-[#88929b]">NORMA REGULAMENTADORA</label>
-              <div className="inline-flex p-1 bg-[#0a0e16] rounded border border-[#3e4850]">
-                <button
-                  type="button"
-                  onClick={() => onSelectNorm('NBR 8800:2008')}
-                  className={`px-3 py-1 rounded font-mono text-xs font-bold transition-colors ${
-                    currentNorm === 'NBR 8800:2008'
-                      ? 'bg-[#89ceff] text-[#00344d] shadow'
-                      : 'text-[#bec8d2] hover:text-[#dfe2ee]'
-                  }`}
-                >
-                  NBR 8800:2008 (BR)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectNorm('AISC 360-16')}
-                  className={`px-3 py-1 rounded font-mono text-xs font-bold transition-colors ${
-                    currentNorm === 'AISC 360-16'
-                      ? 'bg-[#89ceff] text-[#00344d] shadow'
-                      : 'text-[#bec8d2] hover:text-[#dfe2ee]'
-                  }`}
-                >
-                  AISC 360-16 (EUA)
-                </button>
-              </div>
-            </div>
-          </div>
-
+        {/* Action Bar */}
+        <div className="bg-[#181c24] border border-[#3e4850] rounded-lg p-4 flex items-center justify-end gap-4 mt-2">
           {/* Primary Execution Button */}
           <button
             type="button"
             onClick={onStartCalculation}
-            className="flex items-center justify-center gap-2 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] active:opacity-90 px-6 py-3 rounded-lg font-headline text-sm font-bold transition-all shadow-md"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0ea5e9] hover:bg-[#89ceff] text-[#001e2f] active:opacity-90 px-6 py-3 rounded-lg font-headline text-sm font-bold transition-all shadow-md"
           >
             <span className="material-symbols-outlined text-[20px]">play_arrow</span>
             <span>Iniciar Dimensionamento</span>
